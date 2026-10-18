@@ -159,12 +159,13 @@ function deduplicateReadings(
   >();
 
   for (const r of readings) {
-    const key = `${r.spaceId}:${r.date}`;
+    const spaceId = r.spaceId ?? "default";
+    const key = `${spaceId}:${r.date}`;
     const existing = byDate.get(key);
     if (existing) {
       existing.readings.push(r);
     } else {
-      byDate.set(key, { readings: [r], spaceId: r.spaceId });
+      byDate.set(key, { readings: [r], spaceId });
     }
   }
 

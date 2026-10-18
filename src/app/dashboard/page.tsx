@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { DashboardSkeleton } from "@/components/Skeletons";
 import { buildDashboardViewModel } from "@/services/dashboardService";
 import type { Reading, Assumptions } from "@/domain/types";
-import { DEFAULT_ASSUMPTIONS } from "@/domain/types";
+import { DEFAULT_ASSUMPTIONS } from "@/lib/config";
 import { toast, Toaster } from "sonner";
 
 export default function DashboardPage() {

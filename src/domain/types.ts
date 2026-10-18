@@ -5,9 +5,9 @@
 
 /** A single electricity meter reading for one day. */
 export interface Reading {
-  readonly spaceId: string;
   readonly date: string; // ISO 8601 date string (YYYY-MM-DD)
   readonly kwh: number; // kilowatt-hours consumed that day
+  readonly spaceId?: string; // optional space identifier for multi-space support
 }
 
 /** An ordered series of daily readings for one space. */
@@ -21,16 +21,18 @@ export interface Spike {
   readonly date: string;
   readonly kwh: number;
   readonly averageKwh: number;
-  readonly multiplier: number; // how many times the average
+  readonly multiplier: number; // how many times the average (rounded)
 }
 
 /** A smart tip generated from usage patterns. */
 export interface Tip {
   readonly id: string;
   readonly title: string;
-  readonly description: string;
-  readonly potentialSavingsKwh: number; // estimated daily kWh saving
-  readonly category: TipCategory;
+  readonly message: string; // descriptive message
+  readonly estimatedMonthlySavingKwh: number; // projected monthly kWh saving
+  readonly description?: string; // alias for message for backwards compatibility
+  readonly potentialSavingsKwh: number; // daily savings alias for backwards compatibility
+  readonly category?: TipCategory;
 }
 
 export type TipCategory =
@@ -47,12 +49,13 @@ export interface Assumptions {
   readonly spikeMultiplier: number; // usage above avg × this = spike
 }
 
-/** Default assumptions with documented sources. */
-export const DEFAULT_ASSUMPTIONS: Assumptions = {
-  tariffPerKwh: 7, // ₹7/kWh — varies by Indian state
-  emissionFactor: 0.82, // kg CO₂/kWh — CEA 2023 grid emission factor for India
-  spikeMultiplier: 1.5,
-};
+/** Result of comparing weekday vs weekend consumption. */
+export interface WeekdayWeekendComparison {
+  readonly weekdayAverage: number;
+  readonly weekendAverage: number;
+  readonly differencePercentage: number;
+  readonly higher: "weekday" | "weekend" | "equal" | "insufficient_data";
+}
 
 /** Summary statistics for a series. */
 export interface SeriesStats {

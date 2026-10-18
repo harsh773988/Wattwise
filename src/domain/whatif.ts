@@ -4,24 +4,101 @@
  */
 
 import type { WhatIfResult, Assumptions } from "./types";
-import { kwhToRupees, kwhToCo2 } from "./cost";
+import { kwhToRupees, kwhToCo2, round2 } from "./cost";
 
 /** Standard days in a month for projections. */
-const DAYS_PER_MONTH = 30;
+export const DEFAULT_DAYS_PER_MONTH = 30;
 
 /**
- * Project savings for a daily kWh reduction.
- * Example: "AC 1 hour less/day" → dailySavingsKwh = 1.5
+ * Project savings for a device of X watts used Y hours less per day.
+ * Example: A 1500W air conditioner used 1 hour less per day.
+ *
+ * @param watts - Device power rating in Watts (must be >= 0)
+ * @param hoursReducedPerDay - Hours reduced per day (must be >= 0 and <= 24)
+ * @param tariffPerKwh - Cost in ₹ per kWh (must be >= 0)
+ * @param emissionFactor - Carbon intensity in kg CO₂/kWh (must be >= 0)
+ * @param daysPerMonth - Days in billing cycle (default 30)
+ */
+export function projectDeviceHabitSavings(
+  watts: number,
+  hoursReducedPerDay: number,
+  tariffPerKwh: number,
+  emissionFactor: number,
+  daysPerMonth: number = DEFAULT_DAYS_PER_MONTH,
+): WhatIfResult {
+  if (watts < 0) {
+    throw new RangeError("Device wattage must be non-negative");
+  }
+  if (hoursReducedPerDay < 0 || hoursReducedPerDay > 24) {
+    throw new RangeError("Hours reduced per day must be between 0 and 24");
+  }
+  if (tariffPerKwh < 0) {
+    throw new RangeError("Tariff must be non-negative");
+  }
+  if (emissionFactor < 0) {
+    throw new RangeError("Emission factor must be non-negative");
+  }
+  if (daysPerMonth <= 0) {
+    throw new RangeError("Days per month must be greater than zero");
+  }
+
+  const dailySavingsKwh = round2((watts * hoursReducedPerDay) / 1000);
+  const monthlySavingsKwh = round2(dailySavingsKwh * daysPerMonth);
+  const monthlySavingsRupees = kwhToRupees(monthlySavingsKwh, tariffPerKwh);
+  const monthlySavingsCo2Kg = kwhToCo2(monthlySavingsKwh, emissionFactor);
+
+  return {
+    scenarioLabel: `${watts}W device reduced by ${hoursReducedPerDay}h/day`,
+    dailySavingsKwh,
+    monthlySavingsKwh,
+    monthlySavingsRupees,
+    monthlySavingsCo2Kg,
+  };
+}
+
+/** Alias for projectDeviceHabitSavings. */
+export const projectHabitSavings = projectDeviceHabitSavings;
+
+/**
+ * Convenience wrapper to project device habit savings using an Assumptions object.
+ */
+export function projectHabitChange(
+  watts: number,
+  hoursReducedPerDay: number,
+  assumptions: Assumptions,
+  daysPerMonth: number = DEFAULT_DAYS_PER_MONTH,
+): WhatIfResult {
+  return projectDeviceHabitSavings(
+    watts,
+    hoursReducedPerDay,
+    assumptions.tariffPerKwh,
+    assumptions.emissionFactor,
+    daysPerMonth,
+  );
+}
+
+/**
+ * Project monthly savings for a direct daily kWh reduction.
+ *
+ * @param scenarioLabel - Friendly label describing the habit change
+ * @param dailySavingsKwh - Daily reduction in kWh (must be >= 0)
+ * @param assumptions - Assumptions containing tariff and emission factor
+ * @param daysPerMonth - Days in month (default 30)
  */
 export function projectSavings(
   scenarioLabel: string,
   dailySavingsKwh: number,
   assumptions: Assumptions,
+  daysPerMonth: number = DEFAULT_DAYS_PER_MONTH,
 ): WhatIfResult {
   if (dailySavingsKwh < 0) {
     throw new RangeError("Daily savings kWh must be non-negative");
   }
-  const monthlySavingsKwh = round2(dailySavingsKwh * DAYS_PER_MONTH);
+  if (daysPerMonth <= 0) {
+    throw new RangeError("Days per month must be greater than zero");
+  }
+
+  const monthlySavingsKwh = round2(dailySavingsKwh * daysPerMonth);
   return {
     scenarioLabel,
     dailySavingsKwh: round2(dailySavingsKwh),
@@ -37,7 +114,7 @@ export function projectSavings(
   };
 }
 
-/** Predefined scenarios with typical kWh savings per day. */
+/** Predefined scenario definitions for interactive calculators. */
 export interface WhatIfScenario {
   readonly label: string;
   readonly defaultDailyKwh: number;
@@ -81,8 +158,3 @@ export const PRESET_SCENARIOS: readonly WhatIfScenario[] = [
     step: 1,
   },
 ] as const;
-
-/** Round to 2 decimal places. */
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
-}

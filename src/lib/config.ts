@@ -5,7 +5,17 @@
  */
 
 import { z } from "zod";
-import { DEFAULT_ASSUMPTIONS } from "@/domain/types";
+import type { Assumptions } from "@/domain/types";
+
+/**
+ * Default business assumptions.
+ * Configured here so domain modules remain pure with zero hardcoded defaults.
+ */
+export const DEFAULT_ASSUMPTIONS: Assumptions = {
+  tariffPerKwh: 7, // ₹7/kWh default tariff
+  emissionFactor: 0.82, // 0.82 kg CO₂/kWh CEA 2023 grid baseline
+  spikeMultiplier: 1.5, // 1.5x average threshold
+};
 
 /** Environment variable schema — validated once at module load. */
 const envSchema = z.object({
@@ -47,9 +57,6 @@ export function isSupabaseConfigured(): boolean {
   const env = getEnv();
   return !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
-
-/** Re-export default assumptions for easy access. */
-export { DEFAULT_ASSUMPTIONS };
 
 /** Chart downsampling threshold — switch to weekly aggregation above this. */
 export const CHART_DOWNSAMPLE_THRESHOLD = 365;

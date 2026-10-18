@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Assumptions } from "@/domain/types";
-import { DEFAULT_ASSUMPTIONS } from "@/domain/types";
+import { DEFAULT_ASSUMPTIONS } from "@/lib/config";
 
 interface AssumptionsPanelProps {
   assumptions: Assumptions;

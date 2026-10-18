@@ -24,7 +24,8 @@ export class MemoryRepository implements ReadingRepository {
 
   async upsertReadings(readings: readonly Reading[]): Promise<void> {
     for (const r of readings) {
-      const existing = this.store.get(r.spaceId) ?? [];
+      const spaceId = r.spaceId ?? "default";
+      const existing = this.store.get(spaceId) ?? [];
       const idx = existing.findIndex(
         (e) => e.date === r.date,
       );
@@ -33,7 +34,7 @@ export class MemoryRepository implements ReadingRepository {
       } else {
         existing.push(r);
       }
-      this.store.set(r.spaceId, existing);
+      this.store.set(spaceId, existing);
     }
   }
 
