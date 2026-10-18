@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -70,6 +71,7 @@ export function UsageChart({
   assumptions,
   averageKwh,
 }: UsageChartProps) {
+  const prefersReducedMotion = useReducedMotion();
   const [viewMode, setViewMode] = useState<"daily" | "weekly">(
     readings.length > CHART_DOWNSAMPLE_THRESHOLD ? "weekly" : "daily",
   );
@@ -210,6 +212,7 @@ export function UsageChart({
               strokeWidth={1.5}
               name="Regular Usage"
               radius={[2, 2, 0, 0]}
+              isAnimationActive={!prefersReducedMotion}
             />
             {/* Spike readings in high-contrast red-orange */}
             <Bar
@@ -219,6 +222,7 @@ export function UsageChart({
               strokeWidth={2}
               name="Spike Usage"
               radius={[2, 2, 0, 0]}
+              isAnimationActive={!prefersReducedMotion}
             />
             <Line
               type="monotone"

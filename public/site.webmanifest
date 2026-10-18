@@ -1,0 +1,20 @@
+{
+  "name": "WattWise",
+  "short_name": "WattWise",
+  "description": "Upload electricity meter readings and get usage charts, spike alerts, cost in rupees, CO\u2082 footprint, savings tips and a what-if slider.",
+  "theme_color": "#ffe17c",
+  "background_color": "#fbfbf8",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -45,33 +45,24 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fbfbf8]">
-      <Toaster position="top-right" richColors />
       <Navbar />
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-12 sm:py-16">
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 bg-[#ffe17c] border-2 border-black px-3 py-1 shadow-[2px_2px_0px_0px_#000] mb-6">
-            <span className="text-xs font-black uppercase tracking-wider text-black">
-              ⚡ Hackathon Screening Ready
-            </span>
-          </div>
-
           <div className="flex justify-center mb-6">
-            <div className="bg-white border-2 border-black p-3 shadow-[6px_6px_0px_0px_#000]">
-              <Image
-                src="/logo.png"
-                alt="WattWise Logo"
-                width={80}
-                height={80}
-                priority
-                className="object-contain"
-              />
-            </div>
+            <Image
+              src="/logo.png"
+              alt="WattWise Logo"
+              width={140}
+              height={140}
+              priority
+              className="h-[140px] w-[140px] object-contain"
+            />
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-black text-black tracking-tight leading-none mb-4">
-            WattWise
+            Watt<span className="text-[#ffe17c] [text-shadow:-1px_1px_0_#000,1px_1px_0_#000,1px_-1px_0_#000,-1px_-1px_0_#000]" style={{WebkitTextStroke: '0.8px #000', textDecoration: 'none'}}>Wise</span>
           </h1>
 
           <p className="text-xl sm:text-2xl font-black text-[#171e19] mb-4">

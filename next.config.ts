@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isProd = process.env.NODE_ENV === "production";
+
 const securityHeaders = [
   {
     key: "X-Content-Type-Options",
@@ -14,15 +16,35 @@ const securityHeaders = [
     value: "DENY",
   },
   {
+    key: "X-DNS-Prefetch-Control",
+    value: "on",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+  },
+  {
+    key: "X-Permitted-Cross-Domain-Policies",
+    value: "none",
+  },
+  {
+    key: "Strict-Transport-Security",
+    value: isProd ? "max-age=31536000; includeSubDomains; preload" : "max-age=0",
+  },
+  {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
+      "worker-src 'self' blob:",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob:",
+      "img-src 'self' data: blob: https://www.google-analytics.com",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co blob:",
+      "connect-src 'self' https://*.supabase.co https://api.resend.com https://www.google-analytics.com blob:",
       "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "form-action 'self'",
     ].join("; "),
   },
 ];

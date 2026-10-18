@@ -16,7 +16,7 @@ import { DashboardSkeleton } from "@/components/Skeletons";
 import { buildDashboardViewModel } from "@/services/dashboardService";
 import type { Reading, Assumptions } from "@/domain/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/config";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const [spaceId, setSpaceId] = useState("default");
@@ -111,7 +111,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fbfbf8]">
-      <Toaster position="top-right" richColors />
       <Navbar currentSpaceId={spaceId} onSpaceChange={handleSpaceChange} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
