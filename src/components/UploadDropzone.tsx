@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import { parseCsvWithWorker } from "@/infra/csvWorker";
-import { parseAndValidateCsv } from "@/services/importService";
 import type { Reading, DuplicateMergeRule } from "@/domain/types";
 import { toast } from "sonner";
 
@@ -30,11 +29,14 @@ export function UploadDropzone({
     try {
       toast.info(`Parsing ${filename}...`);
 
-      const rawRows = await parseCsvWithWorker(content, (pct) => {
-        setProgress(pct);
-      });
-
-      const validation = parseAndValidateCsv(rawRows, spaceId, mergeRule);
+      const validation = await parseCsvWithWorker(
+        content,
+        (progress) => {
+          const pct = typeof progress === "number" ? progress : progress.percentage;
+          setProgress(pct);
+        },
+        { spaceId, mergeRule, fileName: filename },
+      );
 
       if (validation.validRows === 0) {
         const firstError = validation.errors[0]?.message || "No valid rows found";

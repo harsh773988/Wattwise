@@ -84,6 +84,13 @@ export interface DashboardViewModel {
   readonly spikes: readonly Spike[];
   readonly tips: readonly Tip[];
   readonly assumptions: Assumptions;
+  readonly totals: number;
+  readonly average: number;
+  readonly cost: number;
+  readonly co2: number;
+  readonly weekdayWeekend: WeekdayWeekendComparison;
+  readonly chartSeries: readonly Reading[];
+  readonly isDownsampled: boolean;
 }
 
 /** API error response shape. */
