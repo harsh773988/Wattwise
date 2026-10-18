@@ -19,14 +19,14 @@ export function getRepository(): ReadingRepository {
   }
 
   const env = getEnv();
-  if (isSupabaseConfigured() && env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    logger.info("Using SupabaseRepository for persistence");
-    activeRepoInstance = new SupabaseRepository(
-      env.NEXT_PUBLIC_SUPABASE_URL,
-      env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    );
+  const url = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (isSupabaseConfigured() && url && key) {
+    logger.info("Using SupabaseRepository for persistent storage (Supabase PostgreSQL)");
+    activeRepoInstance = new SupabaseRepository(url, key);
   } else {
-    logger.info("Supabase credentials not found. Falling back to MemoryRepository demo mode.");
+    logger.info("Using MemoryRepository demo mode (in-memory storage)");
     if (!memoryRepoInstance) {
       memoryRepoInstance = new MemoryRepository();
     }

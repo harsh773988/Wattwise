@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
   try {
     const repo = getRepository();
     if (validationResult.readings.length > 0) {
-      await repo.upsertReadings(validationResult.readings);
+      await repo.upsertReadings(spaceId, validationResult.readings);
     }
 
     return NextResponse.json({

@@ -19,7 +19,9 @@ export const DEFAULT_ASSUMPTIONS: Assumptions = {
 
 /** Environment variable schema — validated once at module load. */
 const envSchema = z.object({
+  SUPABASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
@@ -30,7 +32,10 @@ export type EnvConfig = z.infer<typeof envSchema>;
 /** Parse and cache env once. Throws on invalid env vars. */
 function loadEnv(): EnvConfig {
   const result = envSchema.safeParse({
+    SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY:
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX,
     RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS,
@@ -55,7 +60,9 @@ export function getEnv(): EnvConfig {
 /** Whether Supabase credentials are configured. */
 export function isSupabaseConfigured(): boolean {
   const env = getEnv();
-  return !!(env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const url = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return Boolean(url && key);
 }
 
 /** Chart downsampling threshold — switch to weekly aggregation above this. */

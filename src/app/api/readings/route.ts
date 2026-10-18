@@ -90,16 +90,17 @@ export async function GET(req: NextRequest) {
 
   try {
     const repo = getRepository();
-    const readings = await repo.getReadings(spaceId, { offset, limit });
+    const page = await repo.getReadings(spaceId, { offset, limit });
     const count = await repo.countReadings(spaceId);
 
     return NextResponse.json({
-      data: readings,
+      data: page.items,
       meta: {
         spaceId,
         count,
         offset: offset ?? 0,
-        limit: limit ?? readings.length,
+        limit: limit ?? page.items.length,
+        nextCursor: page.nextCursor,
       },
     });
   } catch (err: unknown) {
@@ -159,7 +160,7 @@ export async function POST(req: NextRequest) {
       kwh: r.kwh,
     }));
 
-    await repo.upsertReadings(domainReadings);
+    await repo.upsertReadings(spaceId, domainReadings);
 
     return NextResponse.json(
       {
