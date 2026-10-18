@@ -1,152 +1,125 @@
+/**
+ * /api/import endpoint — processes CSV uploads via multipart/form-data or JSON payload.
+ * Validates file type, payload size limits, invokes importService, and persists valid readings.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import Papa from "papaparse";
-import { parseAndValidateCsv } from "@/services/importService";
+import { parseCsv, parseAndValidateCsv } from "@/services/importService";
 import { getRepository } from "@/infra";
-import { checkRateLimit } from "@/lib/rateLimiter";
-import { getEnv, MAX_CSV_SIZE_BYTES } from "@/lib/config";
-import { logger } from "@/lib/logger";
+import { withApi } from "@/lib/apiWrapper";
+import { ApiErrors } from "@/lib/apiError";
+import { MAX_CSV_SIZE_BYTES } from "@/lib/config";
+import type { DuplicateMergeRule } from "@/domain/types";
 
-const importBodySchema = z.object({
+const importJsonSchema = z.object({
   spaceId: z.string().min(1).default("default"),
   csvContent: z.string().optional(),
   rows: z.array(z.record(z.string(), z.string())).optional(),
-  mergeRule: z.enum(["latest", "sum", "average"]).default("latest"),
+  mergeRule: z.enum(["latest", "sum", "average"]).default("sum"),
 });
 
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return req.headers.get("x-real-ip") ?? "127.0.0.1";
-}
+export const POST = withApi(async (req: NextRequest) => {
+  const contentType = req.headers.get("content-type") || "";
 
-export async function POST(req: NextRequest) {
-  const ip = getClientIp(req);
-  const env = getEnv();
-  const rateLimitRes = checkRateLimit(ip, {
-    maxRequests: env.RATE_LIMIT_MAX,
-    windowMs: env.RATE_LIMIT_WINDOW_MS,
-  });
+  let spaceId = "default";
+  let mergeRule: DuplicateMergeRule = "sum";
+  let csvContent: string | null = null;
+  let rows: Record<string, string>[] | null = null;
+  let fileName: string | undefined = undefined;
+  let mimeType: string | undefined = undefined;
 
-  if (!rateLimitRes.allowed) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "RATE_LIMIT_EXCEEDED",
-          message: "Too many import requests. Please slow down.",
-        },
-      },
-      { status: 429 },
-    );
-  }
+  if (contentType.includes("multipart/form-data")) {
+    try {
+      const formData = await req.formData();
+      const file = formData.get("file");
+      spaceId = (formData.get("spaceId") as string) || "default";
+      mergeRule = ((formData.get("mergeRule") as DuplicateMergeRule) || "sum");
 
-  // Request size limit guard
-  const contentLength = req.headers.get("content-length");
-  if (contentLength && parseInt(contentLength, 10) > MAX_CSV_SIZE_BYTES) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "PAYLOAD_TOO_LARGE",
-          message: `Import payload exceeds limit of ${MAX_CSV_SIZE_BYTES / (1024 * 1024)}MB`,
-        },
-      },
-      { status: 413 },
-    );
-  }
+      if (!file || typeof file === "string") {
+        return ApiErrors.badRequest("No CSV file attached to form data");
+      }
 
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json(
-      {
-        error: {
-          code: "INVALID_JSON",
-          message: "Request body must be valid JSON",
-        },
-      },
-      { status: 400 },
-    );
-  }
+      const fileObj = file as File;
+      fileName = fileObj.name;
+      mimeType = fileObj.type;
 
-  const parseResult = importBodySchema.safeParse(body);
-  if (!parseResult.success) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "VALIDATION_ERROR",
-          message: parseResult.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", "),
-        },
-      },
-      { status: 400 },
-    );
-  }
+      // File size guard
+      if (fileObj.size > MAX_CSV_SIZE_BYTES) {
+        return ApiErrors.payloadTooLarge(MAX_CSV_SIZE_BYTES);
+      }
 
-  const { spaceId, csvContent, rows: providedRows, mergeRule } = parseResult.data;
+      // File type guard
+      if (!fileName.toLowerCase().endsWith(".csv") && !fileName.toLowerCase().endsWith(".txt")) {
+        return ApiErrors.unsupportedMediaType("Only .csv or .txt files are supported");
+      }
 
-  let rawRows: Record<string, string>[] = [];
-
-  if (providedRows && providedRows.length > 0) {
-    rawRows = providedRows;
-  } else if (csvContent) {
-    const parseRes = Papa.parse<Record<string, string>>(csvContent, {
-      header: true,
-      skipEmptyLines: true,
-    });
-    rawRows = parseRes.data;
+      csvContent = await fileObj.text();
+    } catch {
+      return ApiErrors.badRequest("Failed to parse multipart form data");
+    }
+  } else if (contentType.includes("application/json")) {
+    try {
+      const body = await req.json();
+      const parsed = importJsonSchema.safeParse(body);
+      if (!parsed.success) {
+        return ApiErrors.badRequest(parsed.error.issues.map((i) => i.message).join(", "));
+      }
+      spaceId = parsed.data.spaceId;
+      mergeRule = parsed.data.mergeRule;
+      csvContent = parsed.data.csvContent ?? null;
+      rows = parsed.data.rows ?? null;
+    } catch {
+      return ApiErrors.badRequest("Invalid JSON body");
+    }
   } else {
-    return NextResponse.json(
-      {
-        error: {
-          code: "EMPTY_PAYLOAD",
-          message: "Either 'csvContent' or 'rows' must be provided",
-        },
-      },
-      { status: 400 },
-    );
+    return ApiErrors.unsupportedMediaType("Request must be multipart/form-data or application/json");
   }
 
-  const validationResult = parseAndValidateCsv(rawRows, spaceId, mergeRule);
+  // Execute pure domain parsing service
+  const validationResult = csvContent !== null
+    ? parseCsv(csvContent, { spaceId, mergeRule, fileName, mimeType })
+    : rows !== null
+    ? parseAndValidateCsv(rows, spaceId, mergeRule)
+    : null;
 
+  if (!validationResult) {
+    return ApiErrors.badRequest("Either 'file', 'csvContent', or 'rows' must be provided");
+  }
+
+  // If entire file had unrecoverable header or file-level errors
   if (validationResult.validRows === 0 && validationResult.errors.length > 0) {
+    const isFileType = validationResult.errors.some((e) => e.message.includes("file type"));
+    if (isFileType) {
+      return ApiErrors.unsupportedMediaType(validationResult.errors[0].message);
+    }
+
     return NextResponse.json(
       {
         error: {
           code: "IMPORT_FAILED",
           message: "No valid rows could be imported from the CSV.",
+          details: validationResult.errors.slice(0, 50),
         },
-        details: validationResult.errors.slice(0, 50),
       },
       { status: 422 },
     );
   }
 
-  try {
-    const repo = getRepository();
-    if (validationResult.readings.length > 0) {
-      await repo.upsertReadings(spaceId, validationResult.readings);
-    }
-
-    return NextResponse.json({
-      data: {
-        success: true,
-        spaceId,
-        importedCount: validationResult.readings.length,
-        duplicatesHandled: validationResult.duplicatesHandled,
-        totalRowsProcessed: validationResult.totalRows,
-        warnings: validationResult.errors.slice(0, 20),
-      },
-    });
-  } catch (err: unknown) {
-    logger.error("Import storage failed", { error: err });
-    return NextResponse.json(
-      {
-        error: {
-          code: "DATABASE_ERROR",
-          message: err instanceof Error ? err.message : "Failed to store imported readings",
-        },
-      },
-      { status: 500 },
-    );
+  // Persist accepted readings
+  const repo = getRepository();
+  if (validationResult.readings.length > 0) {
+    await repo.upsertReadings(spaceId, validationResult.readings);
   }
-}
+
+  return NextResponse.json({
+    data: {
+      success: true,
+      spaceId,
+      stats: validationResult.stats,
+      importedCount: validationResult.readings.length,
+      warnings: validationResult.warnings,
+      errors: validationResult.errors.slice(0, 20),
+    },
+  });
+});
