@@ -2,7 +2,7 @@
  * /api/readings endpoint — query, upsert, and delete electricity readings.
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRepository } from "@/infra";
 import { withApi } from "@/lib/apiWrapper";

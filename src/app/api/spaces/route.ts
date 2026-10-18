@@ -2,7 +2,7 @@
  * /api/spaces endpoint — list and create physical monitored spaces (e.g. My Room, Lab, Living Room).
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRepository } from "@/infra";
 import { withApi } from "@/lib/apiWrapper";
