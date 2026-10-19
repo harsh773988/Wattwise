@@ -21,7 +21,7 @@ export function Footer() {
               />
             </div>
             <div className="flex flex-col leading-none">
-              <div className="font-black text-3xl sm:text-4xl tracking-tight text-[#ffe17c] [text-shadow:-1px_1px_0_#000,1px_1px_0_#000,1px_-1px_0_#000,-1px_-1px_0_#000]" style={{WebkitTextStroke: '0.8px #000'}}>
+              <div className="outlined-text font-black text-3xl sm:text-4xl tracking-tight text-[#ffe17c] [text-shadow:-1px_1px_0_#000,1px_1px_0_#000,1px_-1px_0_#000,-1px_-1px_0_#000]">
                 WattWise
               </div>
               <div className="mt-2 text-lg sm:text-xl font-light text-[#dfe8e4]">

@@ -62,7 +62,7 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-black text-black tracking-tight leading-none mb-4">
-            Watt<span className="text-[#ffe17c] [text-shadow:-1px_1px_0_#000,1px_1px_0_#000,1px_-1px_0_#000,-1px_-1px_0_#000]" style={{WebkitTextStroke: '0.8px #000', textDecoration: 'none'}}>Wise</span>
+            Watt<span className="outlined-text text-[#ffe17c] [text-shadow:-1px_1px_0_#000,1px_1px_0_#000,1px_-1px_0_#000,-1px_-1px_0_#000]" style={{textDecoration: 'none'}}>Wise</span>
           </h1>
 
           <p className="text-xl sm:text-2xl font-black text-[#171e19] mb-4">

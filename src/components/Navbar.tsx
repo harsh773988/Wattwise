@@ -26,7 +26,7 @@ export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProp
           />
           <div className="min-w-0 max-[359px]:hidden">
             <span className="flex shrink-0 items-center whitespace-nowrap text-xl font-black tracking-tight text-black sm:text-2xl">
-              Watt<span className="text-[#ffe17c] [text-shadow:-1px_1px_0_#000,1px_1px_0_#000,1px_-1px_0_#000,-1px_-1px_0_#000]" style={{WebkitTextStroke: '0.8px #000'}}>Wise</span>
+              Watt<span className="outlined-text text-[#ffe17c] [text-shadow:-1px_1px_0_#000,1px_1px_0_#000,1px_-1px_0_#000,-1px_-1px_0_#000]">Wise</span>
             </span>
             <span className="hidden text-[11px] font-bold text-black/70 -mt-1 tracking-wider uppercase lg:block">
               Know where your power goes

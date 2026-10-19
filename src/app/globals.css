@@ -60,6 +60,11 @@
   color: #ffffff;
 }
 
+.outlined-text {
+  -webkit-text-stroke: 1.6px #000000;
+  paint-order: stroke fill;
+}
+
 .neo-btn {
   border: 2px solid #000000;
   box-shadow: 4px 4px 0px 0px #000000;
