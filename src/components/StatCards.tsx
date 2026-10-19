@@ -1,5 +1,6 @@
 import type { SeriesStats, Assumptions } from "@/domain/types";
 import { formatRupees, formatCo2 } from "@/domain/cost";
+import { EMISSION_FACTOR_SOURCE } from "@/lib/config";
 
 interface StatCardsProps {
   stats: SeriesStats;
@@ -56,7 +57,7 @@ export function StatCards({ stats, assumptions, onOpenAssumptions }: StatCardsPr
           {formatCo2(stats.totalCo2Kg)}
         </div>
         <div className="mt-2 text-xs font-semibold text-black/80">
-          Grid emission factor (CEA 2023)
+          {EMISSION_FACTOR_SOURCE}
         </div>
       </div>
 

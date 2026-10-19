@@ -1,5 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  EMISSION_FACTOR_KG_PER_KWH,
+  EMISSION_FACTOR_SOURCE,
+} from "@/lib/config";
 
 export function Footer() {
   return (
@@ -29,7 +33,7 @@ export function Footer() {
           <div className="text-xs text-[#b7c6c2] text-center sm:text-right">
             <p>Built with Next.js, TypeScript, and Neo-Brutalist Architecture.</p>
             <p className="mt-1">
-              Data emissions based on CEA 2023 grid factor (0.82 kg CO₂/kWh).
+              CO₂ estimates use {EMISSION_FACTOR_SOURCE} ({EMISSION_FACTOR_KG_PER_KWH} kg CO₂/kWh).
             </p>
           </div>
         </div>

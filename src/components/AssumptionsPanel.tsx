@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import type { Assumptions } from "@/domain/types";
-import { DEFAULT_ASSUMPTIONS } from "@/lib/config";
+import {
+  DEFAULT_ASSUMPTIONS,
+  EMISSION_FACTOR_KG_PER_KWH,
+  EMISSION_FACTOR_SOURCE,
+} from "@/lib/config";
 
 interface AssumptionsPanelProps {
   assumptions: Assumptions;
@@ -111,7 +115,8 @@ export function AssumptionsPanel({
               className="neo-input text-sm"
             />
             <p className="text-[11px] text-black/60 mt-1 font-medium">
-              Source: Central Electricity Authority (CEA) India 2023 grid mix. Default: 0.82.
+              Source: {EMISSION_FACTOR_SOURCE}. Default: {EMISSION_FACTOR_KG_PER_KWH} kg CO₂/kWh.
+              Change the factor above or in src/lib/config.ts.
             </p>
           </div>
 

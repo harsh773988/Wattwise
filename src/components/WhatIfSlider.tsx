@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import type { Assumptions } from "@/domain/types";
 import { projectSavings, PRESET_SCENARIOS, type WhatIfScenario } from "@/domain/whatif";
 import { formatRupees, formatCo2 } from "@/domain/cost";
+import { EMISSION_FACTOR_SOURCE } from "@/lib/config";
 
 interface WhatIfSliderProps {
   assumptions: Assumptions;
@@ -145,7 +146,7 @@ export function WhatIfSlider({ assumptions }: WhatIfSliderProps) {
             {formatCo2(projection.monthlySavingsCo2Kg)}
           </div>
           <div className="text-[11px] font-semibold text-black/80 mt-1">
-            @ {assumptions.emissionFactor} kg CO₂/kWh
+            @ {assumptions.emissionFactor} kg CO₂/kWh · {EMISSION_FACTOR_SOURCE}
           </div>
         </div>
       </div>

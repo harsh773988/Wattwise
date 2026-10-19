@@ -11,9 +11,12 @@ import type { Assumptions } from "@/domain/types";
  * Default business assumptions.
  * Configured here so domain modules remain pure with zero hardcoded defaults.
  */
+export const EMISSION_FACTOR_KG_PER_KWH = 0.82;
+export const EMISSION_FACTOR_SOURCE = "Approximate India grid average (configurable)";
+
 export const DEFAULT_ASSUMPTIONS: Assumptions = {
   tariffPerKwh: 7, // ₹7/kWh default tariff
-  emissionFactor: 0.82, // 0.82 kg CO₂/kWh CEA 2023 grid baseline
+  emissionFactor: EMISSION_FACTOR_KG_PER_KWH,
   spikeMultiplier: 1.5, // 1.5x average threshold
 };
 

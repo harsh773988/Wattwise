@@ -223,9 +223,9 @@ CREATE POLICY "Allow public upsert access to readings" ON readings FOR ALL USING
 
 ---
 
-## 📊 Assumptions & Scientific Baseline
+## Assumptions and limitations
 
-1. **Grid Emission Factor:** Default is configured at **`0.82 kg CO₂/kWh`**. Source: *Central Electricity Authority (CEA), Ministry of Power, Government of India, CO₂ Baseline Database for the Indian Power Sector (Version 19, 2023)*.
+1. **Grid Emission Factor:** The default is **`0.82 kg CO₂/kWh`**, labelled **“Approximate India grid average (configurable)”**. This is an approximation until verified against the latest CEA CO₂ Baseline Database. Change the default factor and its source label in `src/lib/config.ts`, or edit the factor in the dashboard Assumptions panel.
 2. **Electricity Tariff:** Default baseline is set at **`₹7.00/kWh`**. In India, residential tariffs vary by state DISCOMs and tiered consumption slabs (e.g. ₹4.50 in Delhi, ₹6.50–₹8.50 in Karnataka and Maharashtra). Users can customize this via the UI Assumptions modal.
 3. **Spike Detection Multiplier:** Default is set to **`1.5x`** the historical series average. Configurable in real time from `1.1x` to `3.0x`.
 4. **Appliance Savings Models:**

@@ -70,7 +70,7 @@ export default function HomePage() {
           </p>
 
           <p className="text-base text-black/70 font-semibold max-w-xl mx-auto mb-8">
-            The layered, high-performance electricity usage tracker. Detect consumption spikes, translate kWh to Indian Rupees &amp; carbon footprint, and simulate habit savings instantly.
+            The layered, high-performance electricity usage tracker. Detect consumption spikes, translate kWh to Indian Rupees and estimated carbon footprint, and simulate habit savings instantly.
           </p>
 
           {/* Primary Call-to-Actions */}
@@ -119,7 +119,7 @@ export default function HomePage() {
               Rupees &amp; Carbon Footprint
             </h3>
             <p className="text-xs text-black/80 font-medium leading-relaxed">
-              Real-time conversion of kilowatt-hours to INR based on local tariffs, plus CEA 2023 grid emissions in kg CO₂.
+              Real-time conversion of kilowatt-hours to INR based on local tariffs, plus estimated grid emissions in kg CO₂.
             </p>
           </div>
 
