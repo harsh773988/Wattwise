@@ -26,18 +26,18 @@ WattWise follows a strict **Layered Architecture** adhering to clean code and do
 
 ```mermaid
 graph TD
-  subgraph Presentation Layer [src/app & src/components]
+  subgraph Presentation["Presentation Layer (src/app & src/components)"]
     Page[Landing & Dashboard Pages]
     Components[Chart, StatCards, Spikes, WhatIf, Dropzone]
     API[API Routes: /api/readings, /api/import]
   end
 
-  subgraph Service Layer [src/services]
+  subgraph Service["Service Layer (src/services)"]
     ImportService[ImportService: CSV Validation, Row Zod Schema, Merge Policies]
     DashboardService[DashboardService: View-Model Orchestration]
   end
 
-  subgraph Domain Layer [src/domain - Pure TypeScript]
+  subgraph Domain["Domain Layer (src/domain - Pure TypeScript)"]
     Analytics[analytics.ts: Averages, Totals, Spikes, Downsampling]
     Cost[cost.ts: kWh -> INR, kWh -> CO2]
     Tips[tips.ts: Pattern Rules Engine]
@@ -45,7 +45,7 @@ graph TD
     Types[types.ts: Reading, Spike, Assumptions, ViewModels]
   end
 
-  subgraph Infrastructure Layer [src/infra & src/lib]
+  subgraph Infrastructure["Infrastructure Layer (src/infra & src/lib)"]
     RepoInterface[ReadingRepository Interface]
     MemRepo[MemoryRepository: Zero-Config In-Memory Adapter]
     SupaRepo[SupabaseRepository: Postgres Client with Batching]
@@ -58,8 +58,8 @@ graph TD
   API --> ImportService
   API --> RepoInterface
   Components --> DashboardService
-  ImportService --> Domain Layer
-  DashboardService --> Domain Layer
+  ImportService --> Domain
+  DashboardService --> Domain
   RepoInterface --> MemRepo
   RepoInterface --> SupaRepo
   Components --> Worker
