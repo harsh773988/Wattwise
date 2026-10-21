@@ -8,7 +8,7 @@ WattWise is an electricity usage tracking and intelligence web application desig
 
 ## 🚀 Live Demo & 3-Step "Try It" Guide
 
-**Live Demo URL:** `https://wattwise.vercel.app` *(or your Vercel deployment)*
+**Live Demo URL:** `https://wattwise1.vercel.app`
 
 To experience WattWise immediately without configuring any accounts or databases:
 1. **Open the App:** Navigate to the home page or dashboard (`/dashboard`).
