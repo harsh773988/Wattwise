@@ -176,6 +176,15 @@ export class MemoryRepository implements ReadingRepository {
     return normalized;
   }
 
+  async listChallengeCompletionsInRange(
+    from: string,
+    to: string,
+  ): Promise<readonly ChallengeCompletion[]> {
+    return Array.from(this.challengeCompletions.values())
+      .filter((completion) => completion.date >= from && completion.date <= to)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
   async listPointsLedger(profileId: string): Promise<readonly PointsLedgerEntry[]> {
     return Array.from(this.pointsLedger.values())
       .filter((entry) => entry.profile_id === profileId)

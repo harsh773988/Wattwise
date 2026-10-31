@@ -24,6 +24,12 @@ The `/challenges` page provides daily self-reported micro-tasks. The `/community
 
 Use **Load demo communities** on `/community` to create five synthetic communities and 30 days of readings, explicitly labelled **Demo data**. To seed through the running app from a terminal, run `npm run seed:demo-communities` (optionally set `WATTWISE_SITE_URL`). Apply the additive SQL migration in `supabase/20261101_gamification_community.sql` before using the new persistence features with Supabase.
 
+### Administrator regional view
+
+The `/admin` page reports aggregate-only community conservation for the latest 30 days. Configure a strong, private `ADMIN_KEY` environment variable on the server and enter the same value in the page; the browser sends it in the `x-admin-key` header and keeps it only in `sessionStorage` for that tab session. Do not configure it as a `NEXT_PUBLIC_` variable. If `ADMIN_KEY` is unset, the endpoint remains locked. CO₂ values and fallback baselines are labelled estimates; demo communities are explicitly labelled **Demo data**.
+
+This shared-key gate is a minimal demonstration safeguard, not user or role-based authorization. Real role-based authentication, authorization, and administrator identity management are future work before production use.
+
 ---
 
 ## 🏛️ System Architecture
@@ -35,13 +41,14 @@ graph TD
   subgraph Presentation["Presentation Layer (src/app & src/components)"]
     Page[Landing & Dashboard Pages]
     Components[Chart, StatCards, Spikes, WhatIf, Dropzone]
-    API[API Routes: readings, import, nudges, challenges, rewards, leaderboard, goals]
+    API[API Routes: readings, import, nudges, challenges, rewards, leaderboard, goals, admin summary]
   end
 
   subgraph Service["Service Layer (src/services)"]
     ImportService[ImportService: CSV Validation, Row Zod Schema, Merge Policies]
     DashboardService[DashboardService: View-Model Orchestration]
     GamificationService[GamificationService: Rewards & Community Goals]
+    AdminService[AdminService: Aggregate-only Regional Summary]
   end
 
   subgraph Domain["Domain Layer (src/domain - Pure TypeScript)"]

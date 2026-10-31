@@ -92,6 +92,11 @@ export interface ReadingRepository {
     profileId: string,
     completion: ChallengeCompletion,
   ): Promise<ChallengeCompletion>;
+  /** List challenge records in an inclusive date range for aggregate reporting. */
+  listChallengeCompletionsInRange(
+    from: string,
+    to: string,
+  ): Promise<readonly ChallengeCompletion[]>;
 
   listPointsLedger(profileId: string): Promise<readonly PointsLedgerEntry[]>;
   addPointsLedger(entries: readonly PointsLedgerEntry[]): Promise<void>;

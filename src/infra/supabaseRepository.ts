@@ -302,6 +302,25 @@ export class SupabaseRepository implements ReadingRepository {
     return data as ChallengeCompletion;
   }
 
+  async listChallengeCompletionsInRange(
+    from: string,
+    to: string,
+  ): Promise<readonly ChallengeCompletion[]> {
+    const { data, error } = await this.client
+      .from("challenge_completions")
+      .select("profile_id, challenge_id, date, points_awarded")
+      .gte("date", from)
+      .lte("date", to)
+      .order("date", { ascending: true });
+
+    if (error) {
+      logger.error("Failed to list challenge completions in date range", { error, from, to });
+      throw new Error(`Supabase challenge completion range query failed: ${error.message}`);
+    }
+
+    return (data ?? []) as ChallengeCompletion[];
+  }
+
   async listPointsLedger(profileId: string): Promise<readonly PointsLedgerEntry[]> {
     const { data, error } = await this.client
       .from("points_ledger")

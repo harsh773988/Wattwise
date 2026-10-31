@@ -31,6 +31,7 @@ const envSchema = z.object({
   CONTACT_EMAIL: z.string().email().optional(),
   RESEND_API_KEY: z.string().min(1).optional(),
   RESEND_FROM_EMAIL: z.string().email().optional(),
+  ADMIN_KEY: z.string().min(1).optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
 });
@@ -50,6 +51,7 @@ function loadEnv(): EnvConfig {
     CONTACT_EMAIL: process.env.CONTACT_EMAIL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    ADMIN_KEY: process.env.ADMIN_KEY,
     RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX,
     RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS,
   });

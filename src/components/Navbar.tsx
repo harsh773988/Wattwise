@@ -60,6 +60,9 @@ export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProp
           <Link href="/community" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
             Community
           </Link>
+          <Link href="/admin" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
+            Admin
+          </Link>
           <Link href="/contact" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
             Contact
           </Link>

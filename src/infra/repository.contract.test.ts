@@ -65,6 +65,15 @@ class TestSupabaseRepository extends SupabaseRepository {
     return next;
   }
 
+  override async listChallengeCompletionsInRange(
+    from: string,
+    to: string,
+  ): Promise<readonly ChallengeCompletion[]> {
+    return Array.from(this.challengeCompletions.values())
+      .filter((completion) => completion.date >= from && completion.date <= to)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
   override async listPointsLedger(profileId: string): Promise<readonly PointsLedgerEntry[]> {
     return Array.from(this.pointsLedger.values()).filter((entry) => entry.profile_id === profileId);
   }
@@ -92,6 +101,7 @@ async function expectChallengeContract(repo: Pick<
   | "createSpace"
   | "getChallengeCompletion"
   | "completeChallenge"
+  | "listChallengeCompletionsInRange"
   | "listPointsLedger"
   | "addPointsLedger"
   | "listCommunityGoals"
@@ -129,6 +139,8 @@ async function expectChallengeContract(repo: Pick<
 
   const list = await repo.listChallengeCompletions(profileId);
   expect(list).toHaveLength(1);
+  expect(await repo.listChallengeCompletionsInRange("2026-10-30", "2026-10-31")).toEqual([completion]);
+  expect(await repo.listChallengeCompletionsInRange("2026-11-01", "2026-11-02")).toEqual([]);
 
   const ledger: PointsLedgerEntry = {
     profile_id: profileId,
