@@ -40,20 +40,32 @@ export function Footer() {
 
         <div className="mt-8 pt-6 border-t border-white/20 flex flex-col sm:flex-row items-center justify-between text-xs text-[#b7c6c2]">
           <p>© {new Date().getFullYear()} WattWise. All rights reserved.</p>
-          <div className="flex gap-4 mt-2 sm:mt-0 font-bold">
+          <nav aria-label="Footer navigation" className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 font-bold sm:mt-0 sm:justify-end">
             <Link href="/" className="hover:text-[#ffe17c] transition-colors">
               Home
-            </Link>
-            <Link href="/about" className="hover:text-[#ffe17c] transition-colors">
-              About
             </Link>
             <Link href="/dashboard" className="hover:text-[#ffe17c] transition-colors">
               Dashboard
             </Link>
+            <Link href="/challenges" className="hover:text-[#ffe17c] transition-colors">
+              Challenges
+            </Link>
+            <Link href="/community" className="hover:text-[#ffe17c] transition-colors">
+              Community
+            </Link>
+            <Link href="/solar" className="hover:text-[#ffe17c] transition-colors">
+              Solar
+            </Link>
+            <Link href="/admin" className="hover:text-[#ffe17c] transition-colors">
+              Admin
+            </Link>
+            <Link href="/about" className="hover:text-[#ffe17c] transition-colors">
+              About
+            </Link>
             <Link href="/contact" className="hover:text-[#ffe17c] transition-colors">
               Contact
             </Link>
-          </div>
+          </nav>
         </div>
       </div>
     </footer>

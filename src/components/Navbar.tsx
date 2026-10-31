@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface NavbarProps {
   currentSpaceId?: string;
@@ -9,12 +10,21 @@ interface NavbarProps {
 }
 
 export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProps) {
+  const pathname = usePathname();
+  const navigation = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/challenges", label: "Challenges" },
+    { href: "/community", label: "Community" },
+    { href: "/solar", label: "Solar" },
+    { href: "/admin", label: "Admin", secondary: true },
+  ] as const;
+
   return (
     <header className="w-full bg-[#ffe17c] border-b-2 border-black sticky top-0 z-50">
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-3 py-2 sm:flex sm:justify-between sm:gap-4 sm:px-6 sm:py-3">
+      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-2 py-2 sm:px-6 sm:py-3">
         <Link
           href="/"
-          className="group col-start-1 row-start-1 flex min-w-0 shrink-0 items-center gap-2 sm:gap-3"
+          className="group flex min-w-0 shrink-0 items-center gap-2 sm:gap-3"
         >
           <Image
             src="/logo.png"
@@ -34,8 +44,30 @@ export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProp
           </div>
         </Link>
 
+        <nav aria-label="Primary navigation" className="order-3 flex w-full flex-wrap items-center justify-center gap-1 md:order-2 md:ml-auto md:w-auto md:flex-nowrap md:gap-1.5">
+          {navigation.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                className={`inline-flex min-h-10 items-center justify-center whitespace-nowrap border-2 px-1.5 font-black uppercase tracking-wide focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black sm:px-2 sm:text-[11px] ${
+                  isActive
+                    ? `border-black bg-[#171e19] text-white shadow-[2px_2px_0px_0px_#000] ${item.href === "/admin" ? "text-[9px]" : "text-[10px]"}`
+                    : item.href === "/admin"
+                      ? "border-transparent bg-transparent text-[9px] text-black/70 hover:border-black hover:bg-white"
+                      : "border-transparent text-[10px] text-black/80 hover:border-black hover:bg-white hover:text-black"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
         {onSpaceChange && (
-          <div className="col-span-2 row-start-2 flex min-h-11 w-full min-w-0 max-w-full items-center gap-2 border-2 border-black bg-white px-2 py-1 shadow-[2px_2px_0px_0px_#000] sm:order-2 sm:w-auto sm:flex-none sm:px-2.5">
+          <div className="order-4 flex min-h-11 w-full min-w-0 max-w-full items-center gap-2 border-2 border-black bg-white px-2 py-1 shadow-[2px_2px_0px_0px_#000] md:order-3 md:ml-auto md:w-auto md:flex-none sm:px-2.5">
             <span className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-wider text-black/70 sm:text-xs">
               Space:
             </span>
@@ -49,39 +81,6 @@ export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProp
             />
           </div>
         )}
-
-        <nav className="hidden items-center gap-3 md:order-3 md:flex">
-          <Link href="/about" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
-            About
-          </Link>
-          <Link href="/challenges" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
-            Challenges
-          </Link>
-          <Link href="/community" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
-            Community
-          </Link>
-          <Link href="/admin" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
-            Admin
-          </Link>
-          <Link href="/contact" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
-            Contact
-          </Link>
-        </nav>
-        <div className="col-start-2 row-start-1 flex items-center gap-1 sm:order-4 sm:gap-2">
-          <Link
-            href="/community"
-            aria-label="Community impact"
-            className="neo-btn min-h-11 whitespace-nowrap bg-[#b7c6c2] px-2 py-2 text-[10px] text-black sm:px-3 sm:text-xs"
-          >
-            Impact
-          </Link>
-          <Link
-            href="/dashboard"
-            className="neo-btn min-h-11 whitespace-nowrap bg-white px-2 py-2 text-[10px] text-black sm:px-4 sm:text-sm"
-          >
-            Dashboard
-          </Link>
-        </div>
       </div>
     </header>
   );

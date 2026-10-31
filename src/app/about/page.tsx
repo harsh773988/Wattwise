@@ -11,7 +11,7 @@ const structuredData = {
 };
 
 export const metadata = {
-  title: "About | WattWise",
+  title: "About",
   description:
     "Learn how WattWise helps households understand their power use, costs, carbon impact, and savings opportunities.",
 };

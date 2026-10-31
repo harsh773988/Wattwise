@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     default: "WattWise",
   },
   description:
-    "Upload electricity meter readings and get usage charts, spike alerts, cost in rupees, CO₂ footprint, savings tips and a what-if slider.",
+    "Your personal Mission LiFE companion for tracking electricity use, discovering practical actions, and following community conservation progress.",
   applicationName: "WattWise",
   icons: {
     icon: [
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "WattWise",
     description:
-      "Upload electricity meter readings and get usage charts, spike alerts, cost in rupees, CO₂ footprint, savings tips and a what-if slider.",
+      "Your personal Mission LiFE companion for tracking electricity use, discovering practical actions, and following community conservation progress.",
     siteName: "WattWise",
     locale: "en_IN",
     type: "website",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "WattWise",
     description:
-      "Upload electricity meter readings and get usage charts, spike alerts, cost in rupees, CO₂ footprint, savings tips and a what-if slider.",
+      "Your personal Mission LiFE companion for tracking electricity use, discovering practical actions, and following community conservation progress.",
     images: ["/logo.png"],
   },
 };
