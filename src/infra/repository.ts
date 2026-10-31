@@ -3,12 +3,30 @@
  * Follows the repository pattern to abstract underlying persistence (In-memory, Supabase Postgres, etc.).
  */
 
-import type { ChallengeCompletion, Reading } from "@/domain/types";
+import type {
+  ChallengeCompletion,
+  CommunityGoal,
+  PointsLedgerEntry,
+  Reading,
+  SpaceType,
+} from "@/domain/types";
 
 export interface Space {
   readonly id: string;
   readonly name: string;
+  readonly displayName?: string;
+  readonly type?: SpaceType;
+  readonly baselineKwhPerDay?: number;
+  readonly peopleCount?: number;
   readonly createdAt?: string;
+}
+
+export interface CreateSpaceDetails {
+  readonly id?: string;
+  readonly displayName?: string;
+  readonly type?: SpaceType;
+  readonly baselineKwhPerDay?: number;
+  readonly peopleCount?: number;
 }
 
 export interface Page<T> {
@@ -30,7 +48,7 @@ export interface ReadingRepository {
   listSpaces(): Promise<readonly Space[]>;
 
   /** Create a new space. */
-  createSpace(name: string): Promise<Space>;
+  createSpace(name: string, details?: CreateSpaceDetails): Promise<Space>;
 
   /**
    * Get paginated readings for a space with optional date range filters.
@@ -74,4 +92,9 @@ export interface ReadingRepository {
     profileId: string,
     completion: ChallengeCompletion,
   ): Promise<ChallengeCompletion>;
+
+  listPointsLedger(profileId: string): Promise<readonly PointsLedgerEntry[]>;
+  addPointsLedger(entries: readonly PointsLedgerEntry[]): Promise<void>;
+  listCommunityGoals(spaceId?: string): Promise<readonly CommunityGoal[]>;
+  createCommunityGoal(goal: CommunityGoal): Promise<CommunityGoal>;
 }

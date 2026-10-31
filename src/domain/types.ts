@@ -72,6 +72,25 @@ export interface ChallengeCompletion {
   readonly points_awarded: number;
 }
 
+export type SpaceType = "room" | "hostel" | "society" | "campus";
+
+export interface PointsLedgerEntry {
+  readonly profile_id: string;
+  readonly date: string;
+  readonly source: string;
+  readonly points: number;
+  readonly reason: string;
+}
+
+export interface CommunityGoal {
+  readonly id: string;
+  readonly space_id: string;
+  readonly target_percent: number;
+  readonly period_start: string;
+  readonly period_end: string;
+  readonly created_at?: string;
+}
+
 export type TipCategory =
   | "high-usage"
   | "spike"

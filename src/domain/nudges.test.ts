@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { generateNudges } from "./nudges";
 import type { UserProfile } from "./types";
+import { DEFAULT_NUDGE_CONFIG } from "@/lib/config";
 
 describe("generateNudges", () => {
   const profile: UserProfile = {
@@ -84,5 +85,26 @@ describe("generateNudges", () => {
     expect(nudges.some((nudge) => nudge.id === "nudge-ac-curtail")).toBe(true);
     expect(nudges.some((nudge) => nudge.id === "nudge-standby")).toBe(true);
     expect(nudges.some((nudge) => nudge.id === "nudge-above-baseline")).toBe(true);
+  });
+
+  it("uses configured peak hours and saving estimates", () => {
+    const config = {
+      ...DEFAULT_NUDGE_CONFIG,
+      peakHourStart: "10:00",
+      peakHourEnd: "14:00",
+      estimatedSavingsKwh: 3,
+      acEstimatedMonthlySavingsKwh: 4,
+      baselineEstimatedMonthlySavingsKwh: 5,
+      standbyEstimatedMonthlySavingsKwh: 6,
+    };
+    const nudges = generateNudges(
+      { ...profile, main_appliances: ["geyser"] },
+      [],
+      new Date("2026-10-31T11:00:00"),
+      config,
+    );
+
+    expect(nudges[0]?.title).toContain("10:00 to 14:00");
+    expect(nudges[0]?.estimatedMonthlyKwhSaving).toBe(3);
   });
 });

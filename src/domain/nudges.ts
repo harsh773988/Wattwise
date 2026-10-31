@@ -11,12 +11,15 @@ export interface NudgeConfig {
   readonly peakHourEnd: string;
   readonly baselineToleranceKwh: number;
   readonly estimatedSavingsKwh: number;
+  readonly acEstimatedMonthlySavingsKwh: number;
+  readonly baselineEstimatedMonthlySavingsKwh: number;
+  readonly standbyEstimatedMonthlySavingsKwh: number;
 }
 
 const DEFAULT_NUDGE_MESSAGE_MAP: Record<string, string> = {
-  geyser: "Shift your geyser to before 18:00 or after 22:00 to avoid the evening peak window.",
+  geyser: "Schedule geyser use outside the assumed evening peak window.",
   "washing machine": "Run the washing machine with a full load outside the assumed peak hours.",
-  iron: "Press clothes early in the day or after peak hours to reduce evening demand.",
+  iron: "Schedule ironing outside the assumed peak window to reduce evening demand.",
   pump: "Schedule pumping later, when evening demand usually falls.",
   ac: "Pre-cool early or slightly raise the thermostat for the next hour.",
   lights: "Switch off lights in empty rooms and use task lighting instead.",
@@ -90,7 +93,7 @@ export function generateNudges(
       id: "nudge-ac-curtail",
       title: "Pre-cool early and reduce AC use",
       message: "Set the AC to a slightly higher setting for an hour this evening and pre-cool the room early.",
-      estimatedMonthlyKwhSaving: 1.8,
+      estimatedMonthlyKwhSaving: config.acEstimatedMonthlySavingsKwh,
       relatedAppliance: "AC",
       reason: "AC use tends to spike in the evening and can be reduced with small scheduling changes.",
     });
@@ -101,7 +104,7 @@ export function generateNudges(
       id: "nudge-above-baseline",
       title: "You are above your baseline",
       message: `Yesterday was ${latestReading.kwh.toFixed(1)} kWh, above your baseline of ${profile.baselineKwhPerDay.toFixed(1)} kWh/day. Try to trim one high-draw task today.`,
-      estimatedMonthlyKwhSaving: 2.1,
+      estimatedMonthlyKwhSaving: config.baselineEstimatedMonthlySavingsKwh,
       relatedAppliance: profile.main_appliances[0],
       reason: "Recent daily use is above the resident's baseline and suggests a specific reduction opportunity.",
     });
@@ -112,7 +115,7 @@ export function generateNudges(
       id: "nudge-standby",
       title: "Unplug standby devices overnight",
       message: "Turn off chargers, adapters, and other standby loads overnight to reduce phantom power draw.",
-      estimatedMonthlyKwhSaving: 0.8,
+      estimatedMonthlyKwhSaving: config.standbyEstimatedMonthlySavingsKwh,
       relatedAppliance: "Standby devices",
       reason: "Idle electronics continue drawing power even when not actively used.",
     });

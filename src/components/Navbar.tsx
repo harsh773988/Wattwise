@@ -57,16 +57,28 @@ export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProp
           <Link href="/challenges" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
             Challenges
           </Link>
+          <Link href="/community" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
+            Community
+          </Link>
           <Link href="/contact" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
             Contact
           </Link>
         </nav>
-        <Link
-          href="/dashboard"
-          className="neo-btn col-start-2 row-start-1 min-h-11 whitespace-nowrap bg-white px-3 py-2 text-xs text-black sm:order-4 sm:px-4 sm:text-sm"
-        >
-          Dashboard
-        </Link>
+        <div className="col-start-2 row-start-1 flex items-center gap-1 sm:order-4 sm:gap-2">
+          <Link
+            href="/community"
+            aria-label="Community impact"
+            className="neo-btn min-h-11 whitespace-nowrap bg-[#b7c6c2] px-2 py-2 text-[10px] text-black sm:px-3 sm:text-xs"
+          >
+            Impact
+          </Link>
+          <Link
+            href="/dashboard"
+            className="neo-btn min-h-11 whitespace-nowrap bg-white px-2 py-2 text-[10px] text-black sm:px-4 sm:text-sm"
+          >
+            Dashboard
+          </Link>
+        </div>
       </div>
     </header>
   );

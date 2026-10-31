@@ -7,6 +7,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/`, lastModified: new Date(), priority: 1 },
     { url: `${siteUrl}/about`, lastModified: new Date(), priority: 0.8 },
     { url: `${siteUrl}/dashboard`, lastModified: new Date(), priority: 0.9 },
+    { url: `${siteUrl}/community`, lastModified: new Date(), priority: 0.8 },
+    { url: `${siteUrl}/challenges`, lastModified: new Date(), priority: 0.8 },
     { url: `${siteUrl}/contact`, lastModified: new Date(), priority: 0.7 },
   ];
 }

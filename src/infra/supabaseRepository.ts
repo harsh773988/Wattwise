@@ -4,8 +4,14 @@
  */
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import type { ChallengeCompletion, Reading } from "@/domain/types";
 import type {
+  ChallengeCompletion,
+  CommunityGoal,
+  PointsLedgerEntry,
+  Reading,
+} from "@/domain/types";
+import type {
+  CreateSpaceDetails,
   ReadingRepository,
   Space,
   Page,
@@ -23,6 +29,19 @@ interface DatabaseReading {
 interface DatabaseSpace {
   id: string;
   name: string;
+  display_name?: string | null;
+  type?: Space["type"];
+  baseline_kwh_per_day?: number | null;
+  people_count?: number | null;
+  created_at?: string;
+}
+
+interface DatabaseGoal {
+  id: string;
+  space_id: string;
+  target_percent: number;
+  period_start: string;
+  period_end: string;
   created_at?: string;
 }
 
@@ -39,7 +58,7 @@ export class SupabaseRepository implements ReadingRepository {
   async listSpaces(): Promise<readonly Space[]> {
     const { data, error } = await this.client
       .from("spaces")
-      .select("id, name, created_at")
+      .select("id, name, display_name, type, baseline_kwh_per_day, people_count, created_at")
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -50,16 +69,31 @@ export class SupabaseRepository implements ReadingRepository {
     return (data as DatabaseSpace[] || []).map((row) => ({
       id: row.id,
       name: row.name,
+      displayName: row.display_name ?? undefined,
+      type: row.type,
+      baselineKwhPerDay: row.baseline_kwh_per_day === null || row.baseline_kwh_per_day === undefined
+        ? undefined
+        : Number(row.baseline_kwh_per_day),
+      peopleCount: row.people_count === null || row.people_count === undefined
+        ? undefined
+        : Number(row.people_count),
       createdAt: row.created_at,
     }));
   }
 
-  async createSpace(name: string): Promise<Space> {
-    const id = name.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || `space-${Date.now()}`;
+  async createSpace(name: string, details: CreateSpaceDetails = {}): Promise<Space> {
+    const id = details.id ?? (name.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || `space-${Date.now()}`);
     const { data, error } = await this.client
       .from("spaces")
-      .insert({ id, name })
-      .select("id, name, created_at")
+      .insert({
+        id,
+        name,
+        display_name: details.displayName,
+        type: details.type,
+        baseline_kwh_per_day: details.baselineKwhPerDay,
+        people_count: details.peopleCount,
+      })
+      .select("id, name, display_name, type, baseline_kwh_per_day, people_count, created_at")
       .single();
 
     if (error) {
@@ -71,6 +105,14 @@ export class SupabaseRepository implements ReadingRepository {
     return {
       id: row.id,
       name: row.name,
+      displayName: row.display_name ?? undefined,
+      type: row.type,
+      baselineKwhPerDay: row.baseline_kwh_per_day === null || row.baseline_kwh_per_day === undefined
+        ? undefined
+        : Number(row.baseline_kwh_per_day),
+      peopleCount: row.people_count === null || row.people_count === undefined
+        ? undefined
+        : Number(row.people_count),
       createdAt: row.created_at,
     };
   }
@@ -258,5 +300,86 @@ export class SupabaseRepository implements ReadingRepository {
     }
 
     return data as ChallengeCompletion;
+  }
+
+  async listPointsLedger(profileId: string): Promise<readonly PointsLedgerEntry[]> {
+    const { data, error } = await this.client
+      .from("points_ledger")
+      .select("profile_id, date, source, points, reason")
+      .eq("profile_id", profileId)
+      .order("date", { ascending: true });
+
+    if (error) {
+      logger.error("Failed to list points ledger from Supabase", { error, profileId });
+      throw new Error(`Supabase points ledger query failed: ${error.message}`);
+    }
+
+    return (data ?? []) as PointsLedgerEntry[];
+  }
+
+  async addPointsLedger(entries: readonly PointsLedgerEntry[]): Promise<void> {
+    if (entries.length === 0) return;
+    const { error } = await this.client
+      .from("points_ledger")
+      .upsert(entries, { onConflict: "profile_id,date,source", ignoreDuplicates: true });
+
+    if (error) {
+      logger.error("Failed to add points to ledger in Supabase", { error, count: entries.length });
+      throw new Error(`Supabase points ledger insert failed: ${error.message}`);
+    }
+  }
+
+  async listCommunityGoals(spaceId?: string): Promise<readonly CommunityGoal[]> {
+    let query = this.client
+      .from("community_goals")
+      .select("id, space_id, target_percent, period_start, period_end, created_at")
+      .order("period_start", { ascending: false });
+    if (spaceId) {
+      query = query.eq("space_id", spaceId);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      logger.error("Failed to list community goals from Supabase", { error, spaceId });
+      throw new Error(`Supabase community goals query failed: ${error.message}`);
+    }
+
+    return ((data ?? []) as DatabaseGoal[]).map((row) => ({
+      id: row.id,
+      space_id: row.space_id,
+      target_percent: Number(row.target_percent),
+      period_start: row.period_start,
+      period_end: row.period_end,
+      created_at: row.created_at,
+    }));
+  }
+
+  async createCommunityGoal(goal: CommunityGoal): Promise<CommunityGoal> {
+    const { data, error } = await this.client
+      .from("community_goals")
+      .insert({
+        id: goal.id,
+        space_id: goal.space_id,
+        target_percent: goal.target_percent,
+        period_start: goal.period_start,
+        period_end: goal.period_end,
+      })
+      .select("id, space_id, target_percent, period_start, period_end, created_at")
+      .single();
+
+    if (error) {
+      logger.error("Failed to create community goal in Supabase", { error, goal });
+      throw new Error(`Supabase community goal insert failed: ${error.message}`);
+    }
+
+    const row = data as DatabaseGoal;
+    return {
+      id: row.id,
+      space_id: row.space_id,
+      target_percent: Number(row.target_percent),
+      period_start: row.period_start,
+      period_end: row.period_end,
+      created_at: row.created_at,
+    };
   }
 }

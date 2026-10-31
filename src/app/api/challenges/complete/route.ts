@@ -8,12 +8,19 @@ import { challengeCatalog } from "@/domain/challenges";
 import { getRepository } from "@/infra";
 import { ApiErrors } from "@/lib/apiError";
 import { withApi } from "@/lib/apiWrapper";
+import { awardChallengeCompletion, ChallengeAwardError } from "@/services/challengeCompletionService";
+import type { ChallengeCompletion } from "@/domain/types";
 
 const completeChallengeSchema = z.object({
   profileId: z.string().trim().min(1),
   challengeId: z.string().trim().min(1),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  points_awarded: z.coerce.number().int().nonnegative().optional(),
+  date: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine((date) => {
+      const parsed = new Date(`${date}T00:00:00.000Z`);
+      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
+    }, "Date must be a valid calendar date.")
+    .refine((date) => date === new Date().toISOString().slice(0, 10), "Challenges can only be completed for today."),
 });
 
 export const POST = withApi(async (_req, { body }) => {
@@ -23,35 +30,24 @@ export const POST = withApi(async (_req, { body }) => {
     return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: parsed.error.message } }, { status: 400 });
   }
 
-  const { profileId, challengeId, date, points_awarded } = parsed.data;
+  const { profileId, challengeId, date } = parsed.data;
   const challenge = challengeCatalog.find((item) => item.id === challengeId);
-  if (!challenge) {
-    return ApiErrors.badRequest(`Unknown challenge id: ${challengeId}`);
+  let completion: ChallengeCompletion;
+  try {
+    completion = await awardChallengeCompletion(repo, profileId, challengeId, date);
+  } catch (error: unknown) {
+    if (error instanceof ChallengeAwardError) {
+      return ApiErrors.badRequest(error.message);
+    }
+    throw error;
   }
-
-  const existing = await repo.getChallengeCompletion(profileId, challengeId, date);
-  if (existing) {
-    return ApiErrors.badRequest("This challenge has already been completed for the selected date.");
-  }
-
-  const todayCompletions = (await repo.listChallengeCompletions(profileId)).filter((item) => item.date === date);
-  if (todayCompletions.length >= 3) {
-    return ApiErrors.badRequest("Challenge cap reached for this day.");
-  }
-
-  const completion = await repo.completeChallenge(profileId, {
-    profile_id: profileId,
-    challenge_id: challengeId,
-    date,
-    points_awarded: points_awarded ?? challenge.points,
-  });
 
   return NextResponse.json({
     data: {
       success: true,
       completion,
       challenge,
-      message: "Challenge marked complete.",
+      message: "Challenge marked complete. Self-reported actions earn fewer points than measured reductions.",
     },
   }, { status: 201 });
 }, { bodySchema: completeChallengeSchema });

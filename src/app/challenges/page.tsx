@@ -18,7 +18,7 @@ export default function ChallengesPage() {
           </p>
         </div>
 
-        <ChallengeBoard profileId="demo-profile" appliances={["geyser", "washing machine", "ac"]} />
+        <ChallengeBoard profileId="default" appliances={["geyser", "washing machine", "ac"]} />
       </main>
 
       <Footer />

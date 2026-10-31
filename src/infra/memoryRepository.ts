@@ -3,8 +3,14 @@
  * Useful for local testing, demo mode, and offline environments.
  */
 
-import type { ChallengeCompletion, Reading } from "@/domain/types";
 import type {
+  ChallengeCompletion,
+  CommunityGoal,
+  PointsLedgerEntry,
+  Reading,
+} from "@/domain/types";
+import type {
+  CreateSpaceDetails,
   ReadingRepository,
   Space,
   Page,
@@ -15,6 +21,8 @@ export class MemoryRepository implements ReadingRepository {
   private spaces: Map<string, Space> = new Map();
   private store: Map<string, Reading[]> = new Map();
   private challengeCompletions: Map<string, ChallengeCompletion> = new Map();
+  private pointsLedger: Map<string, PointsLedgerEntry> = new Map();
+  private communityGoals: Map<string, CommunityGoal> = new Map();
 
   constructor() {
     // Initialize with standard default space
@@ -29,11 +37,15 @@ export class MemoryRepository implements ReadingRepository {
     return Array.from(this.spaces.values());
   }
 
-  async createSpace(name: string): Promise<Space> {
-    const id = name.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || `space-${Date.now()}`;
+  async createSpace(name: string, details: CreateSpaceDetails = {}): Promise<Space> {
+    const id = details.id ?? (name.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || `space-${Date.now()}`);
     const space: Space = {
       id,
       name,
+      displayName: details.displayName,
+      type: details.type,
+      baselineKwhPerDay: details.baselineKwhPerDay,
+      peopleCount: details.peopleCount,
       createdAt: new Date().toISOString(),
     };
     this.spaces.set(id, space);
@@ -164,11 +176,40 @@ export class MemoryRepository implements ReadingRepository {
     return normalized;
   }
 
+  async listPointsLedger(profileId: string): Promise<readonly PointsLedgerEntry[]> {
+    return Array.from(this.pointsLedger.values())
+      .filter((entry) => entry.profile_id === profileId)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  async addPointsLedger(entries: readonly PointsLedgerEntry[]): Promise<void> {
+    for (const entry of entries) {
+      const key = `${entry.profile_id}:${entry.date}:${entry.source}`;
+      if (!this.pointsLedger.has(key)) {
+        this.pointsLedger.set(key, entry);
+      }
+    }
+  }
+
+  async listCommunityGoals(spaceId?: string): Promise<readonly CommunityGoal[]> {
+    return Array.from(this.communityGoals.values())
+      .filter((goal) => !spaceId || goal.space_id === spaceId)
+      .sort((a, b) => a.period_start.localeCompare(b.period_start));
+  }
+
+  async createCommunityGoal(goal: CommunityGoal): Promise<CommunityGoal> {
+    const created = { ...goal, created_at: goal.created_at ?? new Date().toISOString() };
+    this.communityGoals.set(goal.id, created);
+    return created;
+  }
+
   /** Test helper to reset internal state. */
   clear(): void {
     this.spaces.clear();
     this.store.clear();
     this.challengeCompletions.clear();
+    this.pointsLedger.clear();
+    this.communityGoals.clear();
     this.spaces.set("default", {
       id: "default",
       name: "My Room",

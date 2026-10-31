@@ -20,6 +20,7 @@ interface NudgesCardProps {
 
 export function NudgesCard({ profileId = "demo-profile", appliances = ["geyser", "washing machine", "ac"] }: NudgesCardProps) {
   const [nudges, setNudges] = useState<Nudge[]>([]);
+  const [assumptionNote, setAssumptionNote] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const prefersReducedMotion = useReducedMotion();
 
@@ -32,6 +33,7 @@ export function NudgesCard({ profileId = "demo-profile", appliances = ["geyser",
         const json = await res.json();
         if (!ignore) {
           setNudges(json.data?.nudges ?? []);
+          setAssumptionNote(json.data?.assumptions?.note ?? "");
         }
       } catch (error: unknown) {
         if (!ignore) {
@@ -52,7 +54,7 @@ export function NudgesCard({ profileId = "demo-profile", appliances = ["geyser",
 
   if (isLoading) {
     return (
-      <div className="neo-panel p-5 animate-pulse">
+      <div className="neo-panel p-5 animate-pulse motion-reduce:animate-none">
         <div className="h-4 w-32 bg-[#d7d7d7] rounded border border-black mb-4" />
         <div className="space-y-3">
           <div className="h-16 border border-black bg-[#f5f5f5]" />
@@ -67,6 +69,7 @@ export function NudgesCard({ profileId = "demo-profile", appliances = ["geyser",
       <div className="neo-panel p-5 bg-[#f7f4d8]">
         <p className="text-lg font-black uppercase">Today’s nudges</p>
         <p className="mt-2 text-sm font-medium text-black/75">No nudge triggered today. Keep on track with your routine.</p>
+        {assumptionNote && <p className="mt-2 text-xs font-bold">{assumptionNote}</p>}
       </div>
     );
   }
@@ -99,6 +102,7 @@ export function NudgesCard({ profileId = "demo-profile", appliances = ["geyser",
           </div>
         ))}
       </div>
+      {assumptionNote && <p className="mt-3 text-xs font-bold">{assumptionNote}</p>}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { WhatIfSlider } from "@/components/WhatIfSlider";
 import { AssumptionsPanel } from "@/components/AssumptionsPanel";
 import { UploadDropzone } from "@/components/UploadDropzone";
 import { NudgesCard } from "@/components/NudgesCard";
+import { RewardsSummary } from "@/components/RewardsSummary";
 import { ManualEntryModal } from "@/components/ManualEntryModal";
 import { EmptyState } from "@/components/EmptyState";
 import { DashboardSkeleton } from "@/components/Skeletons";
@@ -126,6 +127,7 @@ export default function DashboardPage() {
               {" • "}
               {readings.length} {readings.length === 1 ? "day recorded" : "days recorded"}
             </p>
+            <RewardsSummary profileId={spaceId} spaceId={spaceId} />
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">

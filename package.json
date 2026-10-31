@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "seed:demo-communities": "node scripts/seed-demo-communities.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

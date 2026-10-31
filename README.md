@@ -18,6 +18,12 @@ To experience WattWise immediately without configuring any accounts or databases
    - Adjust the **What-If Slider** (e.g. reduce AC usage by 1 hour/day) to observe real-time monthly financial and carbon savings.
    - Click **⚙️ Assumptions** to customize your state tariff (default ₹7/kWh) or spike detection threshold.
 
+### Mission LiFE Communities & Rewards
+
+The `/challenges` page provides daily self-reported micro-tasks. The `/community` page shows communities ranked by percent reduction against their configured baseline, community goal progress, points, streaks, and earned badges. Measured reading reductions are the primary points signal; self-reported actions earn fewer points and are capped daily. Until a resident baseline is configured, displayed scoring uses a labelled estimate.
+
+Use **Load demo communities** on `/community` to create five synthetic communities and 30 days of readings, explicitly labelled **Demo data**. To seed through the running app from a terminal, run `npm run seed:demo-communities` (optionally set `WATTWISE_SITE_URL`). Apply the additive SQL migration in `supabase/20261101_gamification_community.sql` before using the new persistence features with Supabase.
+
 ---
 
 ## 🏛️ System Architecture
@@ -29,12 +35,13 @@ graph TD
   subgraph Presentation["Presentation Layer (src/app & src/components)"]
     Page[Landing & Dashboard Pages]
     Components[Chart, StatCards, Spikes, WhatIf, Dropzone]
-    API[API Routes: /api/readings, /api/import]
+    API[API Routes: readings, import, nudges, challenges, rewards, leaderboard, goals]
   end
 
   subgraph Service["Service Layer (src/services)"]
     ImportService[ImportService: CSV Validation, Row Zod Schema, Merge Policies]
     DashboardService[DashboardService: View-Model Orchestration]
+    GamificationService[GamificationService: Rewards & Community Goals]
   end
 
   subgraph Domain["Domain Layer (src/domain - Pure TypeScript)"]
@@ -60,6 +67,7 @@ graph TD
   Components --> DashboardService
   ImportService --> Domain
   DashboardService --> Domain
+  GamificationService --> Domain
   RepoInterface --> MemRepo
   RepoInterface --> SupaRepo
   Components --> Worker

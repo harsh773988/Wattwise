@@ -54,7 +54,7 @@ export const challengeCatalog: readonly Challenge[] = [
   {
     id: "geyser-shifted",
     title: "Shift geyser use",
-    description: "Take a shower before 18:00 or after 22:00 to avoid the evening peak.",
+    description: "Schedule geyser use outside the assumed peak window; verify its hours with your DISCOM.",
     difficulty: "medium",
     points: 30,
     applianceTag: "geyser",
@@ -63,7 +63,7 @@ export const challengeCatalog: readonly Challenge[] = [
   {
     id: "iron-off-peak",
     title: "Iron outside peak hours",
-    description: "Do ironing after 22:00 or during the morning instead of in the evening.",
+    description: "Schedule ironing outside the assumed peak window; verify its hours with your DISCOM.",
     difficulty: "medium",
     points: 20,
     applianceTag: "iron",
@@ -72,7 +72,7 @@ export const challengeCatalog: readonly Challenge[] = [
   {
     id: "pump-after-peak",
     title: "Pump water after peak hours",
-    description: "Schedule water pumping for a time outside the assumed peak window.",
+    description: "Schedule water pumping outside the assumed peak window; verify its hours with your DISCOM.",
     difficulty: "easy",
     points: 20,
     applianceTag: "pump",
