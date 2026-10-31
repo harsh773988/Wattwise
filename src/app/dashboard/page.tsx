@@ -10,6 +10,7 @@ import { TipCard } from "@/components/TipCard";
 import { WhatIfSlider } from "@/components/WhatIfSlider";
 import { AssumptionsPanel } from "@/components/AssumptionsPanel";
 import { UploadDropzone } from "@/components/UploadDropzone";
+import { NudgesCard } from "@/components/NudgesCard";
 import { ManualEntryModal } from "@/components/ManualEntryModal";
 import { EmptyState } from "@/components/EmptyState";
 import { DashboardSkeleton } from "@/components/Skeletons";
@@ -222,6 +223,8 @@ export default function DashboardPage() {
               assumptions={viewModel.assumptions}
               onOpenAssumptions={() => setIsAssumptionsOpen(true)}
             />
+
+            <NudgesCard profileId="demo-profile" appliances={["geyser", "washing machine", "ac"]} />
 
             {/* Daily Usage Chart with Spike Highlights */}
             <UsageChart

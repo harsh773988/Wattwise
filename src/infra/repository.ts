@@ -3,7 +3,7 @@
  * Follows the repository pattern to abstract underlying persistence (In-memory, Supabase Postgres, etc.).
  */
 
-import type { Reading } from "@/domain/types";
+import type { ChallengeCompletion, Reading } from "@/domain/types";
 
 export interface Space {
   readonly id: string;
@@ -58,4 +58,20 @@ export interface ReadingRepository {
 
   /** Count total readings for a space. */
   countReadings(spaceId: string): Promise<number>;
+
+  /** Retrieve all completed challenges for a profile. */
+  listChallengeCompletions(profileId: string): Promise<readonly ChallengeCompletion[]>;
+
+  /** Fetch a single challenge completion for a given date. */
+  getChallengeCompletion(
+    profileId: string,
+    challengeId: string,
+    date: string,
+  ): Promise<ChallengeCompletion | null>;
+
+  /** Record a challenge completion once per profile/date/challenge key. */
+  completeChallenge(
+    profileId: string,
+    completion: ChallengeCompletion,
+  ): Promise<ChallengeCompletion>;
 }

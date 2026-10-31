@@ -54,6 +54,9 @@ export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProp
           <Link href="/about" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
             About
           </Link>
+          <Link href="/challenges" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
+            Challenges
+          </Link>
           <Link href="/contact" className="text-sm font-black uppercase tracking-widest text-black/80 hover:text-black">
             Contact
           </Link>

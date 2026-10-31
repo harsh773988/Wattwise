@@ -4,7 +4,7 @@
  */
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import type { Reading } from "@/domain/types";
+import type { ChallengeCompletion, Reading } from "@/domain/types";
 import type {
   ReadingRepository,
   Space,
@@ -190,5 +190,73 @@ export class SupabaseRepository implements ReadingRepository {
     }
 
     return count ?? 0;
+  }
+
+  async listChallengeCompletions(profileId: string): Promise<readonly ChallengeCompletion[]> {
+    const { data, error } = await this.client
+      .from("challenge_completions")
+      .select("profile_id, challenge_id, date, points_awarded")
+      .eq("profile_id", profileId)
+      .order("date", { ascending: true });
+
+    if (error) {
+      logger.error("Failed to list challenge completions from Supabase", { error, profileId });
+      throw new Error(`Supabase challenge completions query failed: ${error.message}`);
+    }
+
+    return (data ?? []) as ChallengeCompletion[];
+  }
+
+  async getChallengeCompletion(
+    profileId: string,
+    challengeId: string,
+    date: string,
+  ): Promise<ChallengeCompletion | null> {
+    const { data, error } = await this.client
+      .from("challenge_completions")
+      .select("profile_id, challenge_id, date, points_awarded")
+      .eq("profile_id", profileId)
+      .eq("challenge_id", challengeId)
+      .eq("date", date)
+      .maybeSingle();
+
+    if (error) {
+      logger.error("Failed to fetch challenge completion from Supabase", {
+        error,
+        profileId,
+        challengeId,
+        date,
+      });
+      throw new Error(`Supabase challenge completion query failed: ${error.message}`);
+    }
+
+    return (data as ChallengeCompletion | null) ?? null;
+  }
+
+  async completeChallenge(
+    profileId: string,
+    completion: ChallengeCompletion,
+  ): Promise<ChallengeCompletion> {
+    const { data, error } = await this.client
+      .from("challenge_completions")
+      .insert({
+        profile_id: profileId,
+        challenge_id: completion.challenge_id,
+        date: completion.date,
+        points_awarded: completion.points_awarded,
+      })
+      .select("profile_id, challenge_id, date, points_awarded")
+      .single();
+
+    if (error) {
+      logger.error("Failed to insert challenge completion in Supabase", {
+        error,
+        profileId,
+        completion,
+      });
+      throw new Error(`Supabase challenge completion insert failed: ${error.message}`);
+    }
+
+    return data as ChallengeCompletion;
   }
 }

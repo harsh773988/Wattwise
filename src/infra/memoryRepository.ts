@@ -3,7 +3,7 @@
  * Useful for local testing, demo mode, and offline environments.
  */
 
-import type { Reading } from "@/domain/types";
+import type { ChallengeCompletion, Reading } from "@/domain/types";
 import type {
   ReadingRepository,
   Space,
@@ -14,6 +14,7 @@ import type {
 export class MemoryRepository implements ReadingRepository {
   private spaces: Map<string, Space> = new Map();
   private store: Map<string, Reading[]> = new Map();
+  private challengeCompletions: Map<string, ChallengeCompletion> = new Map();
 
   constructor() {
     // Initialize with standard default space
@@ -130,10 +131,44 @@ export class MemoryRepository implements ReadingRepository {
     return (this.store.get(spaceId) ?? []).length;
   }
 
+  async listChallengeCompletions(profileId: string): Promise<readonly ChallengeCompletion[]> {
+    return Array.from(this.challengeCompletions.values()).filter(
+      (completion) => completion.profile_id === profileId,
+    );
+  }
+
+  async getChallengeCompletion(
+    profileId: string,
+    challengeId: string,
+    date: string,
+  ): Promise<ChallengeCompletion | null> {
+    const key = `${profileId}:${challengeId}:${date}`;
+    return this.challengeCompletions.get(key) ?? null;
+  }
+
+  async completeChallenge(
+    profileId: string,
+    completion: ChallengeCompletion,
+  ): Promise<ChallengeCompletion> {
+    const key = `${profileId}:${completion.challenge_id}:${completion.date}`;
+    const existing = this.challengeCompletions.get(key);
+    if (existing) {
+      return existing;
+    }
+
+    const normalized = {
+      ...completion,
+      profile_id: profileId,
+    };
+    this.challengeCompletions.set(key, normalized);
+    return normalized;
+  }
+
   /** Test helper to reset internal state. */
   clear(): void {
     this.spaces.clear();
     this.store.clear();
+    this.challengeCompletions.clear();
     this.spaces.set("default", {
       id: "default",
       name: "My Room",

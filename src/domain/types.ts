@@ -35,6 +35,43 @@ export interface Tip {
   readonly category?: TipCategory;
 }
 
+/** Resident profile used for household-level nudges and challenge personalization. */
+export interface UserProfile {
+  readonly id: string;
+  readonly name: string;
+  readonly baselineKwhPerDay: number;
+  readonly main_appliances: readonly string[];
+}
+
+/** Contextual behavioural nudge shown to the resident. */
+export interface Nudge {
+  readonly id: string;
+  readonly title: string;
+  readonly message: string;
+  readonly estimatedMonthlyKwhSaving: number;
+  readonly relatedAppliance?: string;
+  readonly reason: string;
+}
+
+/** A daily or weekly sustainability micro-task. */
+export interface Challenge {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly difficulty: "easy" | "medium" | "hard";
+  readonly points: number;
+  readonly applianceTag?: string;
+  readonly estimatedKwhEffect: number;
+}
+
+/** Completion record for a challenge on a profile/date key. */
+export interface ChallengeCompletion {
+  readonly profile_id: string;
+  readonly challenge_id: string;
+  readonly date: string;
+  readonly points_awarded: number;
+}
+
 export type TipCategory =
   | "high-usage"
   | "spike"

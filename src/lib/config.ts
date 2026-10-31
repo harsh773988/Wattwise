@@ -81,6 +81,20 @@ export function isSupabaseConfigured(): boolean {
 /** Chart downsampling threshold — switch to weekly aggregation above this. */
 export const CHART_DOWNSAMPLE_THRESHOLD = 365;
 
+/** Assumed evening peak window for residential scheduling nudges. Verify source with your local DISCOM before production use. */
+export const ASSUMED_PEAK_HOUR_START = "18:00";
+/** Assumed evening peak window for residential scheduling nudges. Verify source with your local DISCOM before production use. */
+export const ASSUMED_PEAK_HOUR_END = "22:00";
+
+/** Assumed tolerance for nudges triggered when daily use exceeds a resident's baseline. Verify source with local usage data before production use. */
+export const ASSUMED_BASELINE_TOLERANCE_KWH = 1.5;
+
+/** Assumed challenge bonus points. Verify source with program rules before production use. */
+export const ASSUMED_CHALLENGE_POINTS = 25;
+
+/** Assumed micro-task savings estimate. Verify source with appliance load data before production use. */
+export const ASSUMED_MICRO_TASK_KWH_SAVING = 1.4;
+
 /** Maximum CSV file size in bytes (10 MB). */
 export const MAX_CSV_SIZE_BYTES = 10 * 1024 * 1024;
 
@@ -92,3 +106,11 @@ export const CSV_CHUNK_SIZE = 5_000;
 
 /** Batch size for database upserts. */
 export const DB_BATCH_SIZE = 500;
+
+/** Nudge assumptions used for scheduling, baseline, and estimate calculations. */
+export const DEFAULT_NUDGE_CONFIG = {
+  peakHourStart: ASSUMED_PEAK_HOUR_START,
+  peakHourEnd: ASSUMED_PEAK_HOUR_END,
+  baselineToleranceKwh: ASSUMED_BASELINE_TOLERANCE_KWH,
+  estimatedSavingsKwh: ASSUMED_MICRO_TASK_KWH_SAVING,
+} as const;
