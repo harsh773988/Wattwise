@@ -2,7 +2,7 @@
 
 > **Know where your power goes.**
 
-WattWise is an electricity usage tracking and intelligence web application designed for transparency, behavioral efficiency, and technical rigor. Electricity bills arrive once a month with a single aggregate number, obscuring daily consumption anomalies, the financial burden of high-draw appliances, and the associated carbon footprint. WattWise solves this by ingesting daily smart or manual readings, automatically detecting usage spikes, translating kilowatt-hours into Indian Rupees (₹) and grid CO₂ emissions, generating actionable behavioral recommendations, and empowering users to simulate habit changes through a live what-if calculator.
+WattWise is an electricity usage tracking and intelligence web application designed for transparency, behavioral efficiency, and technical rigor. Electricity bills arrive once a month with a single aggregate number, obscuring daily consumption anomalies, the financial burden of high-draw appliances, and the associated carbon footprint. WattWise accepts daily meter readings through CSV or manual entry, detects usage spikes, translates kilowatt-hours into Indian Rupees (₹) and estimated grid CO₂ emissions, generates actionable behavioral recommendations, and lets users simulate habit changes with a what-if calculator.
 
 ---
 
@@ -22,13 +22,40 @@ To experience WattWise immediately without configuring any accounts or databases
 
 The `/challenges` page provides daily self-reported micro-tasks. The `/community` page shows communities ranked by percent reduction against their configured baseline, community goal progress, points, streaks, and earned badges. Measured reading reductions are the primary points signal; self-reported actions earn fewer points and are capped daily. Until a resident baseline is configured, displayed scoring uses a labelled estimate.
 
-Use **Load demo communities** on `/community` to create five synthetic communities and 30 days of readings, explicitly labelled **Demo data**. To seed through the running app from a terminal, run `npm run seed:demo-communities` (optionally set `WATTWISE_SITE_URL`). Apply the additive SQL migration in `supabase/20261101_gamification_community.sql` before using the new persistence features with Supabase.
+Use **Load demo communities** on `/community` to create five synthetic communities and 30 days of readings, explicitly labelled **Demo data**. To seed through the running app from a terminal, run `npm run seed:demo-communities` (optionally set `WATTWISE_SITE_URL`). Apply both additive migrations in the documented order before using the new persistence features with Supabase.
 
 ### Administrator regional view
 
 The `/admin` page reports aggregate-only community conservation for the latest 30 days. Configure a strong, private `ADMIN_KEY` environment variable on the server and enter the same value in the page; the browser sends it in the `x-admin-key` header and keeps it only in `sessionStorage` for that tab session. Do not configure it as a `NEXT_PUBLIC_` variable. If `ADMIN_KEY` is unset, the endpoint remains locked. CO₂ values and fallback baselines are labelled estimates; demo communities are explicitly labelled **Demo data**.
 
 This shared-key gate is a minimal demonstration safeguard, not user or role-based authorization. Real role-based authentication, authorization, and administrator identity management are future work before production use.
+
+### Data model and additive SQL
+
+The base schema is `supabase/schema.sql`. Apply the additive migrations in order:
+`supabase/20261031_challenge_completions.sql`, then
+`supabase/20261101_gamification_community.sql`.
+The challenge table uses `(profile_id, challenge_id, date)` as its primary key. The gamification migration adds `spaces.display_name`, `spaces.type`, `spaces.baseline_kwh_per_day`, and `spaces.people_count`; it creates `points_ledger` with primary key `(profile_id, date, source)` and `community_goals` with a space foreign key plus a valid date range. No extra admin table is needed because administrator reporting aggregates existing readings and challenge completions.
+
+### API routes
+
+Current product routes include:
+
+| Method and path | Purpose |
+|---|---|
+| `GET/POST/DELETE /api/readings` | Read, write, and clear daily readings |
+| `POST /api/import` | Validate and import CSV readings |
+| `GET/POST /api/spaces` | List and create spaces, including baseline metadata |
+| `GET /api/nudges` | Return contextual nudge suggestions |
+| `GET /api/challenges`, `GET /api/challenges/today` | List/select available challenges and today's profile selection |
+| `POST /api/challenges/complete` | Record a capped self-reported completion |
+| `GET /api/me/rewards`, `GET /api/leaderboard` | Return personal rewards and community rankings |
+| `GET/POST /api/goals` | Read and create community goals |
+| `POST /api/communities/demo` | Seed clearly labelled demo communities |
+| `GET /api/admin/summary` | Return administrator-only aggregates; requires `x-admin-key` |
+| `POST /api/contact` | Submit contact form |
+
+Every route uses the shared `withApi` wrapper for rate limiting, size checks, structured errors, and schema validation where configured.
 
 ---
 
@@ -38,51 +65,64 @@ WattWise follows a strict **Layered Architecture** adhering to clean code and do
 
 ```mermaid
 graph TD
-  subgraph Presentation["Presentation Layer (src/app & src/components)"]
-    Page[Landing & Dashboard Pages]
-    Components[Chart, StatCards, Spikes, WhatIf, Dropzone]
-    API[API Routes: readings, import, nudges, challenges, rewards, leaderboard, goals, admin summary]
+  subgraph Presentation["Presentation: src/app & src/components"]
+    Pages[Home, Dashboard, Challenges, Community, Solar resources, Admin]
+    API[API routes: readings, import, spaces, nudges, challenges, rewards, goals, leaderboard, admin]
   end
-
-  subgraph Service["Service Layer (src/services)"]
-    ImportService[ImportService: CSV Validation, Row Zod Schema, Merge Policies]
-    DashboardService[DashboardService: View-Model Orchestration]
-    GamificationService[GamificationService: Rewards & Community Goals]
-    AdminService[AdminService: Aggregate-only Regional Summary]
+  subgraph Services["Use cases: src/services"]
+    Import[importService]
+    Dashboard[dashboardService]
+    Completion[challengeCompletionService]
+    Gamification[gamificationService]
+    Admin[adminService]
+    Demo[demoCommunityService]
   end
-
-  subgraph Domain["Domain Layer (src/domain - Pure TypeScript)"]
-    Analytics[analytics.ts: Averages, Totals, Spikes, Downsampling]
-    Cost[cost.ts: kWh -> INR, kWh -> CO2]
-    Tips[tips.ts: Pattern Rules Engine]
-    WhatIf[whatif.ts: Scenario Projections]
-    Types[types.ts: Reading, Spike, Assumptions, ViewModels]
+  subgraph Domain["Pure domain: src/domain"]
+    Footprint[Footprint: analytics, cost, tips, whatif, types]
+    Nudge[nudges.ts]
+    Challenge[challenges.ts]
+    Rewards[gamification.ts]
+    Aggregate[admin.ts]
   end
-
-  subgraph Infrastructure["Infrastructure Layer (src/infra & src/lib)"]
-    RepoInterface[ReadingRepository Interface]
-    MemRepo[MemoryRepository: Zero-Config In-Memory Adapter]
-    SupaRepo[SupabaseRepository: Postgres Client with Batching]
-    Worker[csvWorker.ts: Non-blocking Web Worker Streaming]
-    Config[config.ts & rateLimiter.ts: Zod Env & Sliding Window Limit]
+  subgraph Persistence["Repository interface and adapters"]
+    Repository[ReadingRepository]
+    Memory[MemoryRepository]
+    Supabase[SupabaseRepository]
+    Tables[(spaces, readings, challenge_completions, points_ledger, community_goals)]
   end
-
-  Page --> Components
-  Page --> API
-  API --> ImportService
-  API --> RepoInterface
-  Components --> DashboardService
-  ImportService --> Domain
-  DashboardService --> Domain
-  GamificationService --> Domain
-  RepoInterface --> MemRepo
-  RepoInterface --> SupaRepo
-  Components --> Worker
+  Pages --> API
+  API --> Import
+  API --> Completion
+  API --> Gamification
+  API --> Admin
+  API --> Repository
+  Import --> Footprint
+  Dashboard --> Footprint
+  Completion --> Challenge
+  Gamification --> Rewards
+  Admin --> Aggregate
+  Repository --> Memory
+  Repository --> Supabase
+  Supabase --> Tables
+  Demo --> Repository
 ```
+
+### Mission LiFE mapping
+
+WattWise is built for HC26-GEDA01; this is not a claim of official GEDA endorsement.
+
+| HC26-GEDA01 core feature | What WattWise implements today | Evidence (implementation files) | Tests |
+|---|---|---|---|
+| Personalised footprint tracker | Daily usage dashboard, cost/CO₂ estimates, reading history, configurable space baseline. There is no separate onboarding flow yet; missing baselines use a labelled estimate. | `src/app/dashboard/page.tsx`, `src/app/api/readings/route.ts`, `src/app/api/spaces/route.ts`, `src/domain/analytics.ts`, `src/domain/cost.ts` | `tests/domain/analytics.test.ts`, `tests/domain/cost.test.ts`, `tests/services/dashboardService.test.ts`, `src/services/adminService.test.ts` |
+| Behavioural nudges and micro-tasks | Contextual appliance nudges and deterministic daily challenge selection/completion. Nudges are scheduling advice based on the assumed peak window; the current API builds demo recent-reading context rather than reading hourly smart-meter data. | `src/domain/nudges.ts`, `src/domain/challenges.ts`, `src/app/api/nudges/route.ts`, `src/app/api/challenges/`, `src/services/challengeCompletionService.ts`, `src/components/NudgesCard.tsx`, `src/components/ChallengeBoard.tsx` | `src/domain/nudges.test.ts`, `src/domain/challenges.test.ts`, `src/services/challengeCompletionService.test.ts`, `src/infra/repository.contract.test.ts` |
+| Gamification and social impact | Points, measured-reduction leaderboard, streaks, badges, community goals, and clearly labelled synthetic demo communities. Reading reductions are the primary validation signal; challenge actions are self-reported and capped. | `src/domain/gamification.ts`, `src/services/gamificationService.ts`, `src/services/demoCommunityService.ts`, `src/app/community/page.tsx`, `src/app/api/leaderboard/`, `src/app/api/goals/` | `src/domain/gamification.test.ts`, `src/services/gamificationService.test.ts`, `src/services/demoCommunityService.test.ts`, `src/infra/repository.contract.test.ts` |
+| Actionable resource hub | Solar and official resource page links to government sources and gives a planning checklist. **A rooftop solar feasibility calculator is not currently implemented.** | `src/app/solar/page.tsx`, `src/components/Navbar.tsx`, `src/app/sitemap.ts` | No dedicated solar calculation tests because no calculator/business logic exists yet. |
+
+Regional administrator aggregates are available at `/admin` and `GET /api/admin/summary`; evidence and tests are `src/services/adminService.ts`, `src/domain/admin.ts`, `src/app/api/admin/summary/route.ts`, `src/services/adminService.test.ts`, and `src/app/api/admin/summary/route.test.ts`.
 
 ### Architectural Flow & Boundaries
 
-1. **`src/domain/` (Pure TypeScript):** Contains core business logic, metric calculations, and domain entities. It has zero external dependencies, zero framework imports (no React, no Next.js), zero I/O, and zero environment access. It is 100% unit tested in complete isolation.
+1. **`src/domain/` (Pure TypeScript):** Contains core business logic, metric calculations, and domain entities. It has zero framework imports and no I/O. `nudges.ts`, `challenges.ts`, `gamification.ts`, and `admin.ts` are pure domain modules; footprint logic is currently split across `analytics.ts`, `cost.ts`, `tips.ts`, and `whatif.ts`.
 2. **`src/services/` (Use-Case Orchestration):** Coordinates domain models and validates external inputs. `importService.ts` normalizes CSV rows and implements deduplication policies; `dashboardService.ts` composes view models from raw series.
 3. **`src/infra/` (Side Effects & Adapters):** Encapsulates storage and client-side processing. Database operations are strictly mediated through the `ReadingRepository` interface.
 4. **`src/app/` & `src/components/` (Presentation):** React 19 UI styled with a high-contrast Neo-Brutalist design system.
@@ -145,22 +185,9 @@ npm run typecheck
 npm run lint
 ```
 
-### Coverage Highlights
+Coverage changes as the code changes. Run `npm run test:coverage` for the current result; do not rely on historical coverage figures in reports.
 
-```text
- % Coverage report from v8
--------------------|---------|----------|---------|---------|
-File               | % Stmts | % Branch | % Funcs | % Lines |
--------------------|---------|----------|---------|---------|
- domain/           |   89.8% |    82.9% |   91.4% |   91.5% |
-  analytics.ts     |   96.5% |    85.0% |  100.0% |  100.0% |
-  cost.ts          |  100.0% |   100.0% |  100.0% |  100.0% |
-  whatif.ts        |  100.0% |   100.0% |  100.0% |  100.0% |
- services/         |  100.0% |    95.7% |  100.0% |  100.0% |
-  dashboardService |  100.0% |   100.0% |  100.0% |  100.0% |
-  importService    |  100.0% |    95.7% |  100.0% |  100.0% |
--------------------|---------|----------|---------|---------|
-```
+Final quality-pass run: **154 passed, 8 skipped**. `src/domain`: **96.41% statements, 98.08% lines**. `src/services`: **96.75% statements, 97.48% lines**.
 
 - **Analytics Edge Cases:** Validated on empty series, single readings, uniform values, trend directions, and weekly aggregations.
 - **Conversion Safety:** Boundary and negative range checks on kWh, tariffs, and carbon coefficients.
@@ -240,14 +267,23 @@ CREATE POLICY "Allow public upsert access to readings" ON readings FOR ALL USING
 
 ## Assumptions and limitations
 
-1. **Grid Emission Factor:** The default is **`0.82 kg CO₂/kWh`**, labelled **“Approximate India grid average (configurable)”**. This is an approximation until verified against the latest CEA CO₂ Baseline Database. Change the default factor and its source label in `src/lib/config.ts`, or edit the factor in the dashboard Assumptions panel.
-2. **Electricity Tariff:** Default baseline is set at **`₹7.00/kWh`**. In India, residential tariffs vary by state DISCOMs and tiered consumption slabs (e.g. ₹4.50 in Delhi, ₹6.50–₹8.50 in Karnataka and Maharashtra). Users can customize this via the UI Assumptions modal.
-3. **Spike Detection Multiplier:** Default is set to **`1.5x`** the historical series average. Configurable in real time from `1.1x` to `3.0x`.
-4. **Appliance Savings Models:**
-   - 1.5-ton 3-star AC: ~1.5 kWh per hour of operation.
-   - 25L Electric Storage Geyser: ~3.0 kW element (~0.05 kWh per minute).
-   - Incandescent to 9W LED bulb: ~0.05 kWh/day saved per bulb (assuming 4 hours of use).
-   - Standby power vampire load: ~0.015 kWh/day per device.
+- **Peak hours:** The default evening window is an assumption (`18:00–22:00`) in `src/lib/config.ts`; verify and configure it with the relevant DISCOM. The app stores daily readings, not hourly smart-meter telemetry, so peak-hour prompts are scheduling advice—not measured peak demand. The current nudge API also builds demo recent-reading context from profile/appliance inputs rather than loading observed history.
+- **Baselines and footprint:** A space may store `baseline_kwh_per_day`; until configured, an explicitly labelled assumed baseline can be used. There is no dedicated onboarding workflow yet. Daily measured readings compared with the configured baseline are the validation signal for reduction points and community performance.
+- **Points:** Measurement-derived reductions earn the primary points. Challenge completions are self-reported, earn fewer points, and are limited by per-completion weighting, 30 challenge points/day, and three completions/day by default. These are configurable program assumptions, not an official Mission LiFE scoring rule.
+- **Demo data:** Seeded communities/readings are synthetic and must remain labelled **Demo data**. They do not represent real communities, vendors, prices, or measured impact.
+- **Authentication and identity:** There is no resident login, role-based authorization, or secure profile identity yet. Challenge profile IDs are supplied by the UI/API (often demo/default IDs); they are not persisted in localStorage. The admin view uses a shared `ADMIN_KEY` in `sessionStorage` as a temporary demonstration gate, not production authentication.
+- **Solar:** `/solar` links to official information and provides a planning checklist. A feasibility calculator and its configurable technical assumptions are not yet implemented; no solar output, cost, payback, or subsidy is claimed. No subsidy is hardcoded.
+- **Tariff and emissions:** Sample tariff and grid-emissions factors are configurable estimates. Tariffs vary by state, DISCOM, and slab; emissions factors should be checked against the latest official CEA source before external claims.
+- **Weather configuration:** `.env.example` lists `OPENWEATHER_API_KEY` as an optional server-side placeholder, but there is no weather feature consuming it in this release.
+
+## Roadmap
+
+1. Add resident accounts, durable profile ownership, and role-based administrator authorization.
+2. Ingest hourly smart-meter readings to support measured peak-hour nudges.
+3. Add DISCOM-specific tariff slabs with official source and version tracking.
+4. Add opt-in push notifications for contextual nudges and challenges.
+5. Build a verified rooftop-solar vendor directory and site-specific feasibility calculator; label estimates and make assumptions configurable, with no invented subsidy claims.
+6. Add weather integration only after its product scope is defined; `OPENWEATHER_API_KEY` is currently unused.
 
 ---
 
@@ -257,64 +293,57 @@ CREATE POLICY "Allow public upsert access to readings" ON readings FOR ALL USING
 Wattwise/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml               # GitHub Actions CI (lint, typecheck, test, build)
+│       └── ci.yml               # GitHub Actions CI
+├── docs/
+│   └── REPORT.md                # Mission LiFE mapping, data model, rules, and report
 ├── public/
-│   ├── logo.png                 # Official WattWise logo
-│   └── sample_data.csv          # Curated 30-day screening dataset
+│   ├── logo.png
+│   └── sample_data.csv          # Clearly labelled demo data
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── import/route.ts  # Batch CSV import handler (rate limited)
-│   │   │   └── readings/route.ts# REST endpoints (GET, POST, DELETE)
-│   │   ├── dashboard/page.tsx   # Dashboard view orchestration
-│   │   ├── globals.css          # Neo-Brutalist stylesheet and theme tokens
-│   │   ├── layout.tsx           # Metadata, fonts, and favicon configuration
-│   │   └── page.tsx             # Landing hero and sample data entrypoint
+│   │   │   ├── admin/summary/route.ts
+│   │   │   ├── challenges/      # Catalog, today, and completion routes
+│   │   │   ├── communities/demo/route.ts
+│   │   │   ├── goals/route.ts
+│   │   │   ├── import/route.ts
+│   │   │   ├── nudges/route.ts
+│   │   │   ├── readings/route.ts
+│   │   │   └── spaces/route.ts
+│   │   ├── admin/, challenges/, community/, dashboard/, solar/
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── robots.ts
+│   │   ├── sitemap.ts
+│   │   └── page.tsx             # Landing and sample-data entrypoint
 │   ├── components/
-│   │   ├── AssumptionsPanel.tsx # Live parameter tuning modal
-│   │   ├── EmptyState.tsx       # Zero-data CTA state
-│   │   ├── Footer.tsx           # Branding & attribution footer
-│   │   ├── ManualEntryModal.tsx # Single-day reading submission
-│   │   ├── Navbar.tsx           # Top navigation with space switcher
-│   │   ├── Skeletons.tsx        # Neo-Brutalist skeleton loaders
-│   │   ├── SpikeList.tsx        # Anomaly listing with cost delta
-│   │   ├── StatCards.tsx        # kWh, ₹, and CO2 KPI display
-│   │   ├── TipCard.tsx          # Pattern-derived recommendations
-│   │   ├── UploadDropzone.tsx   # Drag-and-drop CSV worker importer
-│   │   ├── UsageChart.tsx       # Recharts graph with spike highlights
-│   │   └── WhatIfSlider.tsx     # Habit simulation engine
-│   ├── domain/                  # PURE TYPESCRIPT (No framework/IO imports)
-│   │   ├── analytics.ts         # Math, spikes, downsampling, trends
-│   │   ├── cost.ts              # Financial and carbon footprint math
-│   │   ├── tips.ts              # Pattern rule engine
-│   │   ├── types.ts             # Entities, interfaces, and defaults
-│   │   └── whatif.ts            # Scenario projections
-│   ├── infra/                   # STORAGE & HARDWARE ADAPTERS
-│   │   ├── csvWorker.ts         # Web Worker streaming parser
-│   │   ├── index.ts             # Repository provider/factory
-│   │   ├── memoryRepository.ts  # In-memory demo store
-│   │   ├── repository.ts        # Store interface contract
-│   │   └── supabaseRepository.ts# Supabase Postgres client
-│   ├── lib/
-│   │   ├── config.ts            # Zod env schema & business constants
-│   │   ├── logger.ts            # Structured server logger
-│   │   └── rateLimiter.ts       # Sliding-window rate limiting
-│   └── services/                # USE-CASE ORCHESTRATION
-│       ├── dashboardService.ts  # Assembles view-models
-│       └── importService.ts     # Validates & deduplicates CSV records
+│   │   ├── AdminDashboard.tsx
+│   │   ├── AdminTrendChart.tsx
+│   │   ├── ChallengeBoard.tsx
+│   │   ├── Footer.tsx
+│   │   ├── HomePageContent.tsx
+│   │   ├── Navbar.tsx
+│   │   ├── NudgesCard.tsx
+│   │   └── UsageChart.tsx
+│   ├── domain/                  # Pure TypeScript business logic
+│   │   ├── admin.ts
+│   │   ├── analytics.ts         # Footprint, spikes, trends
+│   │   ├── challenges.ts
+│   │   ├── cost.ts
+│   │   ├── gamification.ts
+│   │   ├── nudges.ts
+│   │   ├── tips.ts
+│   │   ├── types.ts
+│   │   └── whatif.ts
+│   ├── infra/                   # Repository contract and adapters
+│   ├── lib/                     # Zod env config, logger, rate limiter
+│   └── services/                # Use-case orchestration and tests
 ├── supabase/
-│   └── schema.sql               # PostgreSQL tables, indexes & RLS SQL
-├── tests/                       # UNIT & CONTRACT TESTS (Vitest)
-│   ├── domain/
-│   │   ├── analytics.test.ts
-│   │   ├── cost.test.ts
-│   │   ├── tips.test.ts
-│   │   └── whatif.test.ts
-│   ├── infra/
-│   │   └── repositoryContract.test.ts
-│   └── services/
-│       ├── dashboardService.test.ts
-│       └── importService.test.ts
+│   ├── schema.sql
+│   ├── 20261031_challenge_completions.sql
+│   └── 20261101_gamification_community.sql
+├── scripts/
+│   └── seed-demo-communities.mjs
 ├── .env.example
 ├── next.config.ts               # Security headers & Next config
 ├── package.json

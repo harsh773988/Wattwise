@@ -31,19 +31,19 @@ export function ChallengeBoard({
   const [loading, setLoading] = useState(true);
   const prefersReducedMotion = useReducedMotion();
 
-  const loadChallenges = useCallback(async () => {
-    setLoading(true);
+  const loadChallenges = useCallback(async (preserveSelection = false) => {
+    if (!preserveSelection) setLoading(true);
     try {
       const res = await fetch(`/api/challenges/today?profileId=${encodeURIComponent(profileId)}&appliances=${encodeURIComponent(appliances.join(","))}`);
       if (!res.ok) throw new Error("Unable to load today's challenges");
       const json = await res.json();
-      setChallenges(json.data?.challenges ?? []);
+      if (!preserveSelection) setChallenges(json.data?.challenges ?? []);
       setCompletedIds(json.data?.completedChallengeIds ?? []);
       setStreak(json.data?.streak ?? 0);
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Could not load challenges");
     } finally {
-      setLoading(false);
+      if (!preserveSelection) setLoading(false);
     }
   }, [appliances, profileId]);
 
@@ -76,7 +76,7 @@ export function ChallengeBoard({
 
       setCompletedIds((prev) => [...prev, challengeId]);
       toast.success("Challenge complete. Nice work.");
-      await loadChallenges();
+      await loadChallenges(true);
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Challenge could not be recorded");
     }

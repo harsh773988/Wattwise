@@ -9,5 +9,5 @@ if (!response.ok) {
   console.error(body?.error?.message ?? `Demo community seeding failed (${response.status})`);
   process.exitCode = 1;
 } else {
-  console.log(`${body.data.label}: ${body.data.communitiesCreated} communities, ${body.data.readingsCreated} daily readings created.`);
+  process.stdout.write(`${body.data.label}: ${body.data.communitiesCreated} communities, ${body.data.readingsCreated} daily readings created.\n`);
 }

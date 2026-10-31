@@ -1,6 +1,6 @@
 import type { Reading, SpaceType } from "./types";
 
-export interface AdminCommunityInput {
+interface AdminCommunityInput {
   readonly id: string;
   readonly name: string;
   readonly type: SpaceType;
@@ -9,7 +9,7 @@ export interface AdminCommunityInput {
   readonly readings: readonly Reading[];
 }
 
-export interface AdminChallengeCompletion {
+interface AdminChallengeCompletion {
   readonly profile_id: string;
   readonly challenge_id: string;
   readonly date: string;

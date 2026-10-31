@@ -11,27 +11,6 @@ import type { ImportResult, ImportOptions } from "@/services/importService";
 import { parseCsv } from "@/services/importService";
 import { CSV_CHUNK_SIZE } from "@/lib/config";
 
-export interface WorkerProgressEvent {
-  readonly type: "progress";
-  readonly percentage: number;
-  readonly rowsLoaded: number;
-}
-
-export interface WorkerSuccessEvent {
-  readonly type: "success";
-  readonly result: ImportResult;
-}
-
-export interface WorkerErrorEvent {
-  readonly type: "error";
-  readonly message: string;
-}
-
-export type WorkerMessage =
-  | WorkerProgressEvent
-  | WorkerSuccessEvent
-  | WorkerErrorEvent;
-
 /**
  * Parse large CSV input (100k+ rows) with chunked streaming and progress reporting.
  * Operates in worker/streaming mode and returns the typed ImportResult.

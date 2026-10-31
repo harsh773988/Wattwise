@@ -10,12 +10,6 @@ export interface Reading {
   readonly spaceId?: string; // optional space identifier for multi-space support
 }
 
-/** An ordered series of daily readings for one space. */
-export interface Series {
-  readonly spaceId: string;
-  readonly readings: readonly Reading[];
-}
-
 /** A day flagged as a usage spike. */
 export interface Spike {
   readonly date: string;

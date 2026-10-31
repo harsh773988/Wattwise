@@ -4,7 +4,7 @@
  */
 
 import type { Nudge, Reading, UserProfile } from "./types";
-import { ASSUMED_PEAK_HOUR_END, ASSUMED_PEAK_HOUR_START, DEFAULT_NUDGE_CONFIG } from "@/lib/config";
+import { DEFAULT_NUDGE_CONFIG } from "@/lib/config";
 
 export interface NudgeConfig {
   readonly peakHourStart: string;
@@ -125,6 +125,3 @@ export function generateNudges(
   const ordered = deduped.slice(0, 3);
   return ordered;
 }
-
-export const PEAK_WINDOW_START = ASSUMED_PEAK_HOUR_START;
-export const PEAK_WINDOW_END = ASSUMED_PEAK_HOUR_END;

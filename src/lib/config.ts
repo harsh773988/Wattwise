@@ -31,6 +31,7 @@ const envSchema = z.object({
   CONTACT_EMAIL: z.string().email().optional(),
   RESEND_API_KEY: z.string().min(1).optional(),
   RESEND_FROM_EMAIL: z.string().email().optional(),
+  OPENWEATHER_API_KEY: z.string().min(1).optional(),
   ADMIN_KEY: z.string().min(1).optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
@@ -51,6 +52,7 @@ function loadEnv(): EnvConfig {
     CONTACT_EMAIL: process.env.CONTACT_EMAIL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY,
     ADMIN_KEY: process.env.ADMIN_KEY,
     RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX,
     RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS,
@@ -90,9 +92,6 @@ export const ASSUMED_PEAK_HOUR_END = "22:00";
 
 /** Assumed tolerance for nudges triggered when daily use exceeds a resident's baseline. Verify source with local usage data before production use. */
 export const ASSUMED_BASELINE_TOLERANCE_KWH = 1.5;
-
-/** Assumed challenge bonus points. Verify source with program rules before production use. */
-export const ASSUMED_CHALLENGE_POINTS = 25;
 
 /** Assumed micro-task savings estimate. Verify source with appliance load data before production use. */
 export const ASSUMED_MICRO_TASK_KWH_SAVING = 1.4;

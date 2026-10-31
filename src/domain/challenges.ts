@@ -215,5 +215,3 @@ export function calculateChallengeStreak(
 
   return streak;
 }
-
-export const challengeIds = challengeCatalog.map((challenge) => challenge.id);
