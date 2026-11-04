@@ -2,6 +2,17 @@
 
 > **Know where your power goes.**
 
+**Problem statement:** HC26-GEDA01. WattWise is an independent submission and does not claim official GEDA endorsement.
+
+### Submission links
+
+| Submission item | Link |
+|---|---|
+| Live site | [WattWise](https://wattwise1.vercel.app) |
+| Demo video | Placeholder |
+| Pitch deck PDF | Placeholder |
+| Documentation | [docs/REPORT.md](docs/REPORT.md) |
+
 WattWise is an electricity usage tracking and intelligence web application designed for transparency, behavioral efficiency, and technical rigor. Electricity bills arrive once a month with a single aggregate number, obscuring daily consumption anomalies, the financial burden of high-draw appliances, and the associated carbon footprint. WattWise accepts daily meter readings through CSV or manual entry, detects usage spikes, translates kilowatt-hours into Indian Rupees (₹) and estimated grid CO₂ emissions, generates actionable behavioral recommendations, and lets users simulate habit changes with a what-if calculator.
 
 ---
@@ -11,12 +22,40 @@ WattWise is an electricity usage tracking and intelligence web application desig
 **Live Demo URL:** `https://wattwise1.vercel.app`
 
 To experience WattWise immediately without configuring any accounts or databases:
-1. **Open the App:** Navigate to the home page or dashboard (`/dashboard`).
-2. **Load Sample Data:** Click the **⚡ "Load 30-Day Sample Data"** button. The application ingests a curated 30-day screening dataset containing typical household baselines and 3 distinct spike days.
+1. **Open the App:** Visit the live site. On the home page, click **"Load Sample Data & View Dashboard"** to load the demo and open the dashboard. Alternatively, open `/dashboard` and click **"Load 30-Day Sample Data"**.
+2. **Review the readings:** The sample contains 30 daily readings. With the default 1.5×-average spike threshold, the domain detector flags **2 spike days**.
 3. **Explore Intelligence:**
-   - Review your daily usage chart with spike days flagged in high-contrast red/orange.
-   - Adjust the **What-If Slider** (e.g. reduce AC usage by 1 hour/day) to observe real-time monthly financial and carbon savings.
-   - Click **⚙️ Assumptions** to customize your state tariff (default ₹7/kWh) or spike detection threshold.
+   - Review the daily usage chart and spike list.
+   - Adjust a control in **"What-If Savings Calculator"** to see projected monthly financial and carbon savings.
+   - Click **"Assumptions"** to customize the tariff (default ₹7/kWh) or spike detection threshold.
+
+## Tech stack, libraries and APIs
+
+### Main libraries
+
+| Package | Purpose |
+|---|---|
+| `next` | Next.js framework, app routing, API routes, and production build |
+| `react`, `react-dom` | UI components and browser rendering |
+| `@supabase/supabase-js` | Supabase client for optional persistent storage |
+| `papaparse` | CSV parsing for electricity readings |
+| `recharts` | Dashboard charts |
+| `sonner` | In-app toast notifications |
+| `zod` | Runtime validation for configuration and request data |
+
+### Development and styling
+
+| Package | Purpose |
+|---|---|
+| `typescript` | Static type checking |
+| `tailwindcss`, `@tailwindcss/postcss`, `@tailwindcss/turbopack` | Utility-first styling and Next.js build integration |
+| `eslint`, `eslint-config-next` | Linting with Next.js rules |
+| `vitest`, `@vitest/coverage-v8`, `vite` | Unit and contract tests, with V8 coverage |
+| `prettier` | Code formatting |
+
+### Runtime integrations
+
+Supabase is the optional external database: when Supabase credentials are configured, readings use Supabase; otherwise the app uses in-memory storage and needs no external database. Google Analytics loads only when `NEXT_PUBLIC_GA_ID` is configured. The contact form sends email through Resend only when `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are configured; without them it runs in demo mode. `OPENWEATHER_API_KEY` is currently unused, and the app makes no OpenWeather API requests.
 
 ### Mission LiFE Communities & Rewards
 
@@ -204,9 +243,9 @@ Final quality-pass run: **154 passed, 8 skipped**. `src/domain`: **96.41% statem
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/your-username/wattwise.git
+git clone https://github.com/harsh773988/Wattwise.git
 cd wattwise
-npm install --legacy-peer-deps
+npm ci
 ```
 
 ### 2. Configure Environment (Optional)
