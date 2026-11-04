@@ -9,8 +9,8 @@
 | Submission item | Link |
 |---|---|
 | Live site | [WattWise](https://wattwise1.vercel.app) |
-| Demo video | Placeholder |
-| Pitch deck PDF | Placeholder |
+| Demo video | [Watch on YouTube](https://youtu.be/IVb6-s5IYY0) |
+| Pitch deck PDF | [View PDF](https://drive.google.com/file/d/10yDwcKXoYrzB7atVmvlMpK2HKk5bLE4Z/view) |
 | Documentation | [docs/REPORT.md](docs/REPORT.md) |
 
 WattWise is an electricity usage tracking and intelligence web application designed for transparency, behavioral efficiency, and technical rigor. Electricity bills arrive once a month with a single aggregate number, obscuring daily consumption anomalies, the financial burden of high-draw appliances, and the associated carbon footprint. WattWise accepts daily meter readings through CSV or manual entry, detects usage spikes, translates kilowatt-hours into Indian Rupees (₹) and estimated grid CO₂ emissions, generates actionable behavioral recommendations, and lets users simulate habit changes with a what-if calculator.
