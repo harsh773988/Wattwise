@@ -76,6 +76,9 @@ export default function AboutPage() {
             changes can lower both emissions and monthly bills. The experience is designed to be
             readable, fast, and transparent for everyday home energy decisions.
           </p>
+          <p className="mt-3 text-sm font-medium leading-7 text-black/75">
+            Inspired by India&apos;s Mission LiFE (Lifestyle for Environment).
+          </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link href="/dashboard" className="neo-btn bg-[#ffe17c] px-5 py-3 text-sm text-black">

@@ -35,6 +35,7 @@ export function Footer() {
             <p className="mt-1">
               CO₂ estimates use {EMISSION_FACTOR_SOURCE} ({EMISSION_FACTOR_KG_PER_KWH} kg CO₂/kWh).
             </p>
+            <p className="mt-1">Inspired by India&apos;s Mission LiFE (Lifestyle for Environment).</p>
           </div>
         </div>
 

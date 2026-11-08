@@ -136,7 +136,7 @@ export default function CommunityPage() {
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.2em] text-black/70">Mission LiFE</p>
+            <p className="text-sm font-black uppercase tracking-[0.2em] text-black/70">Community progress</p>
             <h1 className="mt-2 text-3xl font-black text-black sm:text-4xl">Community impact</h1>
             <p className="mt-2 max-w-2xl text-sm font-medium text-black/75">
               Communities are ranked by percent reduction from baseline, not total electricity use. Estimates are labelled.

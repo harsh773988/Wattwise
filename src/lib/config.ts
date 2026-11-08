@@ -102,21 +102,21 @@ export const ASSUMED_BASELINE_NUDGE_MONTHLY_SAVING_KWH = 2.1;
 /** Assumed monthly standby reduction estimate. Verify with appliance tests before production use. */
 export const ASSUMED_STANDBY_NUDGE_MONTHLY_SAVING_KWH = 0.8;
 
-/** Assumed points awarded per percentage point of measured reduction. Verify with Mission LiFE program owners. */
+/** Assumed points awarded per percentage point of measured reduction; review this assumption before use. */
 export const ASSUMED_POINTS_PER_REDUCTION_PERCENT = 2;
-/** Assumed daily cap for points based on measured reduction. Verify with Mission LiFE program owners. */
+/** Assumed daily cap for points based on measured reduction; review this assumption before use. */
 export const ASSUMED_DAILY_REDUCTION_POINTS_CAP = 100;
-/** Assumed streak bonus for each consecutive day under baseline. Verify with Mission LiFE program owners. */
+/** Assumed streak bonus for each consecutive day under baseline; review this assumption before use. */
 export const ASSUMED_STREAK_BONUS_POINTS_PER_DAY = 5;
-/** Assumed maximum streak bonus awarded per day. Verify with Mission LiFE program owners. */
+/** Assumed maximum streak bonus awarded per day; review this assumption before use. */
 export const ASSUMED_STREAK_BONUS_POINTS_CAP = 25;
-/** Assumed point multiplier for self-reported challenges; deliberately lower than measured reductions. Verify with Mission LiFE program owners. */
+/** Assumed point multiplier for self-reported challenges; deliberately lower than measured reductions. Review before use. */
 export const ASSUMED_SELF_REPORTED_CHALLENGE_POINTS_MULTIPLIER = 0.4;
-/** Assumed daily cap on self-reported challenge points. Verify with Mission LiFE program owners. */
+/** Assumed daily cap on self-reported challenge points; review this assumption before use. */
 export const ASSUMED_CHALLENGE_POINTS_DAILY_CAP = 30;
-/** Assumed maximum self-reported challenge completions per profile/day. Verify with Mission LiFE program owners. */
+/** Assumed maximum self-reported challenge completions per profile/day; review this assumption before use. */
 export const ASSUMED_CHALLENGE_COMPLETIONS_DAILY_CAP = 3;
-/** Assumed badge thresholds. Verify with Mission LiFE program owners. */
+/** Assumed badge thresholds; review these assumptions before use. */
 export const ASSUMED_BADGE_THRESHOLDS = {
   threeDayStreak: 3,
   sevenDayStreak: 7,

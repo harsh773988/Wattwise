@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     default: "WattWise",
   },
   description:
-    "Your personal Mission LiFE companion for tracking electricity use, discovering practical actions, and following community conservation progress.",
+    "Track your electricity use, discover practical actions, and follow community conservation progress. Inspired by India's Mission LiFE.",
   applicationName: "WattWise",
   icons: {
     icon: [
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "WattWise",
     description:
-      "Your personal Mission LiFE companion for tracking electricity use, discovering practical actions, and following community conservation progress.",
+      "Track your electricity use, discover practical actions, and follow community conservation progress. Inspired by India's Mission LiFE.",
     siteName: "WattWise",
     locale: "en_IN",
     type: "website",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "WattWise",
     description:
-      "Your personal Mission LiFE companion for tracking electricity use, discovering practical actions, and following community conservation progress.",
+      "Track your electricity use, discover practical actions, and follow community conservation progress. Inspired by India's Mission LiFE.",
     images: ["/logo.png"],
   },
 };

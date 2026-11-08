@@ -123,7 +123,7 @@ export function AdminDashboard() {
       <Navbar />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
         <div className="mb-7">
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-black/70">Mission LiFE · Administration</p>
+          <p className="text-sm font-black uppercase tracking-[0.2em] text-black/70">Administration</p>
           <h1 className="mt-2 text-3xl font-black text-black sm:text-4xl">Regional conservation</h1>
           <p className="mt-2 max-w-3xl text-sm font-medium text-black/75">
             Aggregate community trends for the last 30 days. This view does not expose individual readings.

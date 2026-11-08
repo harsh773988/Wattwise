@@ -1,22 +1,12 @@
-# WattWise: Mission LiFE Project Report
+# WattWise: Electricity Usage Project Report
 
-**Hack Cult ’26 · Green Energy & Sustainability · Problem statement HC26-GEDA01 · Team Kalki**
 Live demo: https://wattwise1.vercel.app · Repository: https://github.com/harsh773988/Wattwise
 
 WattWise is a personal and community electricity-use companion. It accepts daily readings through CSV, manual entry, or clearly labelled demo data, then presents consumption patterns, baseline comparisons, estimated costs and emissions, behavioral suggestions, challenges, rewards, community goals, and regional aggregates.
 
-WattWise is built for the stated problem; this report does not imply official GEDA endorsement.
+## 1. Inspired by Mission LiFE
 
-## 1. HC26-GEDA01 feature mapping
-
-| Core feature | Current implementation and scope | Evidence | Tests |
-|---|---|---|---|
-| Personalised footprint tracker | Daily usage dashboard, reading history, cost/CO₂ estimates, and configurable space baseline. There is not yet a dedicated onboarding flow; a missing baseline can use a labelled estimate. | `src/app/dashboard/page.tsx`, `src/app/api/readings/route.ts`, `src/app/api/spaces/route.ts`, `src/domain/analytics.ts`, `src/domain/cost.ts` | `tests/domain/analytics.test.ts`, `tests/domain/cost.test.ts`, `tests/services/dashboardService.test.ts` |
-| Behavioural nudges and micro-tasks | Appliance-aware scheduling advice and daily challenge selection/completion. Nudges use assumed peak hours and daily data; there is no hourly smart-meter measurement. The nudge endpoint currently uses demo recent-reading context derived from profile/appliance request inputs, not stored readings. | `src/domain/nudges.ts`, `src/domain/challenges.ts`, `src/app/api/nudges/route.ts`, `src/app/api/challenges/`, `src/services/challengeCompletionService.ts` | `src/domain/nudges.test.ts`, `src/domain/challenges.test.ts`, `src/services/challengeCompletionService.test.ts`, `src/infra/repository.contract.test.ts` |
-| Gamification and social impact | Measurement-derived points, percent-reduction rankings, streaks, badges, goals, and synthetic communities marked Demo data. Challenge actions are self-reported, earn fewer points, and are capped. | `src/domain/gamification.ts`, `src/services/gamificationService.ts`, `src/services/demoCommunityService.ts`, `src/app/community/page.tsx` | `src/domain/gamification.test.ts`, `src/services/gamificationService.test.ts`, `src/services/demoCommunityService.test.ts`, `src/infra/repository.contract.test.ts` |
-| Actionable resource hub | `/solar` contains official links and a checklist. A rooftop solar feasibility calculator is **not implemented**; no solar output, cost, payback, or subsidy is claimed. | `src/app/solar/page.tsx`, `src/components/Navbar.tsx`, `src/app/sitemap.ts` | No solar calculation tests exist because there is no calculation logic. |
-
-Administrator aggregates are served by `GET /api/admin/summary` and rendered at `/admin`. The output is aggregate-only and the route is protected by a shared demonstration key. Evidence: `src/services/adminService.ts`, `src/domain/admin.ts`, `src/app/api/admin/summary/route.ts`. Tests: `src/services/adminService.test.ts`, `src/app/api/admin/summary/route.test.ts`.
+WattWise is inspired by India's Mission LiFE (Lifestyle for Environment); Mission LiFE serves only as inspiration for this independent project.
 
 ## 2. Architecture
 

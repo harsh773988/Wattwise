@@ -30,7 +30,7 @@ export default function SolarPage() {
       <Navbar />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-12">
         <section className="neo-panel bg-[#ffe17c] p-5 sm:p-8">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-black/65">Mission LiFE · Take action</p>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-black/65">Solar resources · Take action</p>
           <h1 className="mt-2 text-3xl font-black text-black sm:text-4xl">Solar and official resources</h1>
           <p className="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-black/75">
             Rooftop solar suitability depends on your roof, shade, local rules, electricity use, and current programme terms. Use official sources and a qualified local assessment before making a decision.

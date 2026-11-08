@@ -87,7 +87,7 @@ export function HomePageContent() {
             />
           </div>
           <h1 className="mb-3 text-4xl font-black leading-tight tracking-tight text-black sm:text-6xl">
-            Your personal Mission LiFE companion
+            Understand your electricity use
           </h1>
           <p className="mb-4 text-xl font-black text-[#171e19] sm:text-2xl">
             &ldquo;Know where your power goes.&rdquo;
@@ -117,15 +117,15 @@ export function HomePageContent() {
             Use sample data to preview the dashboard. WattWise also works in in-memory mode without a database.
           </p>
           <p className="mt-2 text-[11px] font-bold text-black/55">
-            Built for Hack Cult 26, problem statement HC26-GEDA01.
+            Inspired by India&apos;s Mission LiFE
           </p>
         </section>
 
-        <section aria-labelledby="mission-life-heading" className="mb-16">
+        <section aria-labelledby="small-habits-heading" className="mb-16">
           <div className="mb-6 max-w-2xl">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-black/60">Small steps, visible progress</p>
-            <h2 id="mission-life-heading" className="mt-2 text-2xl font-black text-black sm:text-3xl">
-              How WattWise supports Mission LiFE
+            <h2 id="small-habits-heading" className="mt-2 text-2xl font-black text-black sm:text-3xl">
+              Small habits, big impact
             </h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
