@@ -17,7 +17,7 @@ Monthly bills can hide daily usage patterns, appliance costs, and estimated carb
 - **Nudges and challenges:** appliance tips and daily micro-tasks
 - **Community:** points, streaks, badges, goals, and a leaderboard ranked by reduction from baseline
 - **Admin:** aggregate-only regional view
-- **Solar resources:** official links and a planning checklist; no solar feasibility calculator
+- **Solar planner:** planning estimates from your monthly bill and roof area, plus official links and a rooftop assessment checklist
 
 ## How it works
 
@@ -83,9 +83,9 @@ Next.js, React 19, TypeScript, Tailwind, Recharts, PapaParse, Zod, Supabase (opt
 - Demo communities are synthetic and labelled *Demo data*.
 - Baselines may be estimates until configured; challenge completions are self-reported and capped.
 - No resident login. `/admin` uses a shared key as a demo gate only.
-- `/solar` has official links and a checklist only; there is no feasibility calculator, and no solar output, cost, payback, or subsidy is claimed.
+- `/solar` provides planning estimates from configurable assumptions, with no subsidy included; the cost per kW is a placeholder, not a quotation, and there is no vendor directory yet.
 - Tariff and emissions factors are configurable estimates, not authoritative local values.
 
 ## Roadmap
 
-Resident accounts and roles · hourly smart-meter nudges · DISCOM tariff slabs · push notifications · solar feasibility calculator and verified vendor directory
+Resident accounts and roles · hourly smart-meter nudges · DISCOM tariff slabs · push notifications · verified solar vendor directory

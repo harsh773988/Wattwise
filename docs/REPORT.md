@@ -20,7 +20,9 @@ flowchart LR
   DOM --> CHALLENGES["challenges.ts"]
   DOM --> GAMIFICATION["gamification.ts"]
   DOM --> ADMIN["admin.ts"]
-  SOLAR["Solar resource page; calculator not implemented"] -. no calculation domain yet .-> UI
+  DOM --> SOLAR_DOMAIN["solar.ts"]
+  UI --> SOLAR["Solar planner and resource page"]
+  SOLAR --> SOLAR_DOMAIN
   API --> REPO["ReadingRepository"]
   REPO --> MEM["MemoryRepository"]
   REPO --> SB["SupabaseRepository"]
@@ -112,9 +114,8 @@ Rules and badge thresholds are tested in `src/domain/gamification.test.ts` and `
 - **Points:** Measured readings against baseline are the primary validation; self-reported challenges are secondary and capped as shown above.
 - **Demo content:** Synthetic seeded readings and communities must be presented as **Demo data**. They do not represent real organisations or performance.
 - **Identity and authorization:** There is no resident login or role-based authorization. Profile IDs are supplied through UI/API defaults and are not persisted in localStorage. The shared `ADMIN_KEY` is held in browser `sessionStorage` and sent in the `x-admin-key` header; this is a demo gate, not production authentication.
-- **Solar:** The resource page does not calculate feasibility. There are no solar output/cost assumptions or subsidy claims in the product. Verify official links before demo/submission; any future calculator values must be labelled estimates and assumptions made configurable.
+- **Solar:** `/solar` provides planning estimates from configurable assumptions, without subsidies. The cost-per-kW rate is a placeholder, not a quotation, and there is no vendor directory. Verify official links, costs, eligibility, and incentives through official sources and written quotes.
 - **Tariff and emissions:** Defaults are configurable estimates. DISCOM slabs and grid-emissions factors require official-source verification before being represented as authoritative.
-- **Weather:** `OPENWEATHER_API_KEY` is an optional server-side placeholder only; no current feature reads it.
 - **Storage:** In-memory data resets when the server restarts. Supabase RLS policies are suitable only for this demo until real authorization is designed.
 
 ## 7. Roadmap
@@ -123,8 +124,7 @@ Rules and badge thresholds are tested in `src/domain/gamification.test.ts` and `
 2. Hourly smart-meter ingestion to enable measured peak-hour nudges and stronger validation.
 3. DISCOM-specific tariff slabs and bill calculations, with source/version tracking.
 4. Opt-in push notifications for timely nudges and challenges.
-5. Verified, maintained rooftop-solar vendor directory and a site-specific solar feasibility calculator, with configurable assumptions and no invented subsidy claims.
-6. Only after a weather feature is specified: integrate the optional OpenWeather key server-side.
+5. Verified, maintained rooftop-solar vendor directory.
 
 ## 8. Verification
 
@@ -132,7 +132,7 @@ Final quality-pass results: `npm test -- --coverage` ran **154 tests passed and 
 
 ## 9. Manual submission checklist
 
-- Configure private `ADMIN_KEY` on Vercel. `OPENWEATHER_API_KEY` is not currently consumed; configure it only if/when weather integration is added.
+- Configure private `ADMIN_KEY` on Vercel.
 - Apply the two additive Supabase migrations above after the base schema.
 - Verify the official solar resource URLs and verify every peak-hour, tariff, emissions, and future solar assumption against an authoritative source.
 - Redeploy, then update the presentation and demo video to match implemented behavior and disclosed limitations.

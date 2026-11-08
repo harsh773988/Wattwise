@@ -31,7 +31,6 @@ const envSchema = z.object({
   CONTACT_EMAIL: z.string().email().optional(),
   RESEND_API_KEY: z.string().min(1).optional(),
   RESEND_FROM_EMAIL: z.string().email().optional(),
-  OPENWEATHER_API_KEY: z.string().min(1).optional(),
   ADMIN_KEY: z.string().min(1).optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
@@ -52,7 +51,6 @@ function loadEnv(): EnvConfig {
     CONTACT_EMAIL: process.env.CONTACT_EMAIL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
-    OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY,
     ADMIN_KEY: process.env.ADMIN_KEY,
     RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX,
     RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS,
@@ -169,4 +167,14 @@ export const DEFAULT_NUDGE_CONFIG = {
   acEstimatedMonthlySavingsKwh: ASSUMED_AC_NUDGE_MONTHLY_SAVING_KWH,
   baselineEstimatedMonthlySavingsKwh: ASSUMED_BASELINE_NUDGE_MONTHLY_SAVING_KWH,
   standbyEstimatedMonthlySavingsKwh: ASSUMED_STANDBY_NUDGE_MONTHLY_SAVING_KWH,
+} as const;
+
+/** Planning estimates only; no subsidy included. Verify with official sources and written quotes. */
+export const DEFAULT_SOLAR_ASSUMPTIONS = {
+  tariffPerKwh: DEFAULT_ASSUMPTIONS.tariffPerKwh,
+  emissionFactor: EMISSION_FACTOR_KG_PER_KWH,
+  generationKwhPerKwPerDay: 4,
+  areaSqFtPerKw: 100,
+  usableRoofFraction: 0.7,
+  costPerKw: 60000,
 } as const;
