@@ -5,6 +5,11 @@ import { communityGoalProgress } from "@/domain/gamification";
 import { getRepository } from "@/infra";
 import { withApi } from "@/lib/apiWrapper";
 import { ASSUMED_DEFAULT_BASELINE_KWH_PER_DAY } from "@/lib/config";
+import {
+  getApiAuthContext,
+  resolveOwnedSpaceId,
+  unauthorizedResponse,
+} from "@/lib/supabase/apiAuth";
 
 const querySchema = z.object({
   spaceId: z.string().trim().min(1).default("default"),
@@ -17,19 +22,28 @@ function isValidDate(value: string): boolean {
 
 export const GET = withApi<unknown, z.infer<typeof querySchema>>(
   async (_request, { query }) => {
+    const auth = await getApiAuthContext();
+    if (auth.enabled && !auth.user) return unauthorizedResponse();
+    const spaceId = await resolveOwnedSpaceId(auth, query.spaceId);
+    if (!spaceId) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "You do not have access to this space." } },
+        { status: 403 },
+      );
+    }
     const repository = getRepository();
     const [goals, spaces] = await Promise.all([
-      repository.listCommunityGoals(query.spaceId),
+      repository.listCommunityGoals(spaceId),
       repository.listSpaces(),
     ]);
-    const space = spaces.find((item) => item.id === query.spaceId);
+    const space = spaces.find((item) => item.id === spaceId);
     const now = new Date();
     const active = goals.find((goal) =>
       goal.period_start <= now.toISOString().slice(0, 10)
       && goal.period_end >= now.toISOString().slice(0, 10),
     ) ?? null;
     const readings = active
-      ? (await repository.getReadings(query.spaceId, {
+      ? (await repository.getReadings(spaceId, {
         from: active.period_start,
         to: active.period_end,
         limit: 5000,
@@ -66,9 +80,18 @@ const createGoalSchema = z.object({
 
 export const POST = withApi<z.infer<typeof createGoalSchema>>(
   async (_request, { body }) => {
+    const auth = await getApiAuthContext();
+    if (auth.enabled && !auth.user) return unauthorizedResponse();
+    const spaceId = await resolveOwnedSpaceId(auth, body.spaceId);
+    if (!spaceId) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "You do not have access to this space." } },
+        { status: 403 },
+      );
+    }
     const repository = getRepository();
     const spaces = await repository.listSpaces();
-    if (!spaces.some((space) => space.id === body.spaceId)) {
+    if (!spaces.some((space) => space.id === spaceId)) {
       return NextResponse.json({
         error: {
           code: "NOT_FOUND",
@@ -79,7 +102,7 @@ export const POST = withApi<z.infer<typeof createGoalSchema>>(
 
     const goal = await repository.createCommunityGoal({
       id: randomUUID(),
-      space_id: body.spaceId,
+      space_id: spaceId,
       target_percent: body.targetPercent,
       period_start: body.periodStart,
       period_end: body.periodEnd,

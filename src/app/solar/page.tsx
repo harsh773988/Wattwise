@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
-import { SolarPlanner } from "@/components/SolarPlanner";
+import { SuryaGharStudio } from "@/components/SuryaGharStudio";
+import { EvSavingsCalculator } from "@/components/EvSavingsCalculator";
 
 export const metadata: Metadata = {
   title: "Rooftop Solar Planner and Resources",
@@ -23,6 +24,12 @@ const resources = [
       "Consult the ministry's official website for renewable energy policies, notices, and programme information.",
     href: "https://mnre.gov.in/",
   },
+  {
+    name: "Uttar Pradesh New and Renewable Energy Development Agency",
+    description:
+      "Review Uttar Pradesh's official solar-energy programmes and agency information. Other states should consult their own State Nodal Agency.",
+    href: "https://upneda.org.in/",
+  },
 ] as const;
 
 export default function SolarPage() {
@@ -38,7 +45,13 @@ export default function SolarPage() {
           </p>
         </section>
 
-        <SolarPlanner />
+        <div className="mt-8">
+          <SuryaGharStudio />
+        </div>
+
+        <div className="mt-8">
+          <EvSavingsCalculator />
+        </div>
 
         <section aria-labelledby="checklist-heading" className="mt-7 neo-panel bg-white p-5 sm:p-7">
           <h2 id="checklist-heading" className="text-xl font-black uppercase">Before requesting a site assessment</h2>

@@ -42,6 +42,7 @@ export class MemoryRepository implements ReadingRepository {
     const space: Space = {
       id,
       name,
+      ownerId: details.ownerId,
       displayName: details.displayName,
       type: details.type,
       baselineKwhPerDay: details.baselineKwhPerDay,

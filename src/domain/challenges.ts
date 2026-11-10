@@ -4,6 +4,7 @@
  */
 
 import type { Challenge, ChallengeCompletion, UserProfile } from "./types";
+import { NATIONAL_QUESTS_CATALOG } from "./nationalLifeQuests";
 
 export const challengeCatalog: readonly Challenge[] = [
   {
@@ -133,6 +134,23 @@ export const challengeCatalog: readonly Challenge[] = [
     estimatedKwhEffect: 1.0,
   },
 ];
+
+export function getChallengeById(challengeId: string): Challenge | undefined {
+  const challenge = challengeCatalog.find((item) => item.id === challengeId);
+  if (challenge) return challenge;
+
+  const quest = NATIONAL_QUESTS_CATALOG.find((item) => item.id === challengeId);
+  if (!quest) return undefined;
+
+  return {
+    id: quest.id,
+    title: quest.title,
+    description: quest.description,
+    difficulty: quest.difficulty,
+    points: quest.points,
+    estimatedKwhEffect: 0,
+  };
+}
 
 function normalize(value: string): string {
   return value.trim().toLowerCase();

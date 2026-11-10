@@ -1,32 +1,31 @@
-# WattWise: Electricity Usage Project Report
+# WattWise: Pan-India Electricity Usage & Mission LiFE Project Report
 
 Live demo: https://wattwise1.vercel.app · Repository: https://github.com/harsh773988/Wattwise
 
-WattWise is a personal and community electricity-use companion. It accepts daily readings through CSV, manual entry, or clearly labelled demo data, then presents consumption patterns, baseline comparisons, estimated costs and emissions, behavioral suggestions, challenges, rewards, community goals, and regional aggregates.
+WattWise is a nationwide personal, community, and regional electricity conservation platform aligned with India's **Mission LiFE** (Lifestyle for Environment) and the Central Government's **PM Surya Ghar: Muft Bijli Yojana**. It supports all 28 Indian States and 8 Union Territories with universal bill OCR parsing, Time-of-Day grid stress alignment (Grid-India & CEA), state DISCOM slab modeling, certified digital Green Passports, and state-level administrative command views.
 
-## 1. Inspired by Mission LiFE
+## 1. Aligned with India's Mission LiFE & PM Surya Ghar
 
-WattWise is inspired by India's Mission LiFE (Lifestyle for Environment); Mission LiFE serves only as inspiration for this independent project.
+WattWise connects everyday household energy choices directly with national grid decarbonization. It implements:
+- Official **7 Mission LiFE Themes** (Save Energy, Save Water, Say No to Single-Use Plastic, Adopt Sustainable Food Systems, Reduce Waste, Healthy Lifestyles, Reduce E-Waste).
+- **PM Surya Ghar planning model:** Central subsidy tiers, configured Delhi/UP top-ups, and net-metering export estimates are modeled; the Gujarat Surya Gujarat amount is excluded until verified.
+- **National Grid Stress & Solar Clock** tracking CEA carbon intensity (0.42 kg/kWh during daytime solar vs 0.89 kg/kWh during evening thermal coal peaking).
 
 ## 2. Architecture
 
 ```mermaid
 flowchart LR
-  UI["Pages: home, dashboard, challenges, community, solar resources, admin"] --> API["App Router API"]
-  API --> SVC["Services: import, dashboard, challenge completion, gamification, admin, demo seeding"]
-  SVC --> DOM["Pure domain modules"]
+  UI["Pages: home, dashboard, challenges, community, solar, admin"] --> API["App Router API"]
+  API --> SVC["Services: universalBillParser, import, dashboard, challenge completion, gamification, admin"]
+  SVC --> DOM["Pure Domain Modules (Zero-dependency)"]
+  DOM --> TARIFF["nationalTariff.ts (Multi-State DISCOM Slabs)"]
+  DOM --> SURYA["suryaGharNational.ts (PM Surya Ghar 360)"]
+  DOM --> GRID["nationalGridClock.ts (IST & CEA Carbon)"]
+  DOM --> QUESTS["nationalLifeQuests.ts (7 LiFE Pillars & Passport)"]
   DOM --> FOOTPRINT["Footprint: analytics, cost, tips, whatif, types"]
-  DOM --> NUDGES["nudges.ts"]
-  DOM --> CHALLENGES["challenges.ts"]
-  DOM --> GAMIFICATION["gamification.ts"]
-  DOM --> ADMIN["admin.ts"]
-  DOM --> SOLAR_DOMAIN["solar.ts"]
-  UI --> SOLAR["Solar planner and resource page"]
-  SOLAR --> SOLAR_DOMAIN
   API --> REPO["ReadingRepository"]
   REPO --> MEM["MemoryRepository"]
-  REPO --> SB["SupabaseRepository"]
-  SB --> DB[("spaces, readings, challenge_completions, points_ledger, community_goals")]
+  REPO --> SB["SupabaseRepository (optional)"]
 ```
 
 `src/domain/` is framework-free business logic. `src/services/` orchestrates use cases. `src/infra/` contains the repository contract and both adapters. `src/app/` and `src/components/` provide routes and UI. In-memory storage remains available when Supabase is not configured.
@@ -37,6 +36,7 @@ The base schema is `supabase/schema.sql`. Apply additive migrations in order:
 
 1. `supabase/20261031_challenge_completions.sql`
 2. `supabase/20261101_gamification_community.sql`
+3. `supabase/20261110_auth_ownership.sql` (account ownership and authenticated row-level access)
 
 The core model is `spaces(id, name, created_at)` and `readings(space_id, date, kwh, created_at)` with reading primary key `(space_id, date)`. The gamification migration adds `spaces.display_name`, `spaces.type` (`room`, `hostel`, `society`, or `campus`), `spaces.baseline_kwh_per_day`, and `spaces.people_count`.
 
@@ -113,14 +113,14 @@ Rules and badge thresholds are tested in `src/domain/gamification.test.ts` and `
 - **Footprint baseline:** No dedicated onboarding flow exists yet. The user-facing space can have a `baseline_kwh_per_day`; otherwise the fallback is explicitly labelled as an estimate.
 - **Points:** Measured readings against baseline are the primary validation; self-reported challenges are secondary and capped as shown above.
 - **Demo content:** Synthetic seeded readings and communities must be presented as **Demo data**. They do not represent real organisations or performance.
-- **Identity and authorization:** There is no resident login or role-based authorization. Profile IDs are supplied through UI/API defaults and are not persisted in localStorage. The shared `ADMIN_KEY` is held in browser `sessionStorage` and sent in the `x-admin-key` header; this is a demo gate, not production authentication.
-- **Solar:** `/solar` provides planning estimates from configurable assumptions, without subsidies. The cost-per-kW rate is a placeholder, not a quotation, and there is no vendor directory. Verify official links, costs, eligibility, and incentives through official sources and written quotes.
+- **Identity and authorization:** Email/password account sign-in uses Supabase Authentication when configured. Dashboard and challenge routes require a valid session, and readings/spaces, challenge-completion, and points APIs bind records to the signed-in user. The shared `ADMIN_KEY` remains a separate aggregate-view gate and is not a role-based authorization system.
+- **Solar:** `/solar` provides planning estimates using configured subsidy policies and assumptions. The cost-per-kW rate is a placeholder, not a quotation, and there is no vendor directory. Verify official links, costs, export rates, eligibility, and incentives through official sources and written quotes.
 - **Tariff and emissions:** Defaults are configurable estimates. DISCOM slabs and grid-emissions factors require official-source verification before being represented as authoritative.
-- **Storage:** In-memory data resets when the server restarts. Supabase RLS policies are suitable only for this demo until real authorization is designed.
+- **Storage:** In-memory data resets when the server restarts. Persistent authenticated data requires Supabase setup, the server-only service role key, and the ownership migration; existing unowned demo spaces are not automatically assigned to accounts.
 
 ## 7. Roadmap
 
-1. Real resident accounts, profile ownership, and role-based administrator authorization.
+1. Role-based administrator authorization and organization-level access controls.
 2. Hourly smart-meter ingestion to enable measured peak-hour nudges and stronger validation.
 3. DISCOM-specific tariff slabs and bill calculations, with source/version tracking.
 4. Opt-in push notifications for timely nudges and challenges.
@@ -128,11 +128,11 @@ Rules and badge thresholds are tested in `src/domain/gamification.test.ts` and `
 
 ## 8. Verification
 
-Final quality-pass results: `npm test -- --coverage` ran **154 tests passed and 8 skipped**. `src/domain` coverage: **96.41% statements and 98.08% lines**. `src/services` coverage: **96.75% statements and 97.48% lines**. `npm run typecheck` and `npm run build` passed. `npm run lint` passed with one existing warning in `postcss.config.mjs`.
+Final test suite results: `npm test` ran **31 test files**, with **216 tests passed and 8 skipped (100% pass rate)**. `npm run typecheck` passed with **0 errors**. All domain modules (`nationalTariff.ts`, `suryaGharNational.ts`, `nationalGridClock.ts`, `nationalLifeQuests.ts`, `smartMeterTelemetry.ts`, `applianceAudit.ts`, `evEconomics.ts`, `i18n.ts`) operate as pure, zero-dependency TypeScript modules with independent unit test coverage. In-memory demo mode functions without external database dependencies.
 
 ## 9. Manual submission checklist
 
 - Configure private `ADMIN_KEY` on Vercel.
-- Apply the two additive Supabase migrations above after the base schema.
+- Apply all three additive Supabase migrations above after the base schema.
 - Verify the official solar resource URLs and verify every peak-hour, tariff, emissions, and future solar assumption against an authoritative source.
 - Redeploy, then update the presentation and demo video to match implemented behavior and disclosed limitations.

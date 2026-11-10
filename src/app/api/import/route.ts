@@ -11,6 +11,11 @@ import { withApi } from "@/lib/apiWrapper";
 import { ApiErrors } from "@/lib/apiError";
 import { MAX_CSV_SIZE_BYTES } from "@/lib/config";
 import type { DuplicateMergeRule } from "@/domain/types";
+import {
+  getApiAuthContext,
+  resolveOwnedSpaceId,
+  unauthorizedResponse,
+} from "@/lib/supabase/apiAuth";
 
 const importJsonSchema = z.object({
   spaceId: z.string().min(1).default("default"),
@@ -75,6 +80,17 @@ export const POST = withApi(async (req: NextRequest) => {
   } else {
     return ApiErrors.unsupportedMediaType("Request must be multipart/form-data or application/json");
   }
+
+  const auth = await getApiAuthContext();
+  if (auth.enabled && !auth.user) return unauthorizedResponse();
+  const ownedSpaceId = await resolveOwnedSpaceId(auth, spaceId);
+  if (!ownedSpaceId) {
+    return NextResponse.json(
+      { error: { code: "FORBIDDEN", message: "You do not have access to this space." } },
+      { status: 403 },
+    );
+  }
+  spaceId = ownedSpaceId;
 
   // Execute pure domain parsing service
   const validationResult = csvContent !== null

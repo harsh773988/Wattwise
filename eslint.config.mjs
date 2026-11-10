@@ -9,6 +9,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "coverage/**",
+    "public/wattwise-ocr/**",
     "next-env.d.ts",
   ]),
   ...nextVitals,

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import { IndiaMapLeaderboard } from "@/components/IndiaMapLeaderboard";
+import { CommunityGoalBanner } from "@/components/CommunityGoalBanner";
 
 interface LeaderboardRow {
   id: string;
@@ -149,6 +151,14 @@ export default function CommunityPage() {
           >
             Load demo communities
           </button>
+        </div>
+
+        <div className="mb-6">
+          <CommunityGoalBanner />
+        </div>
+
+        <div className="mb-8">
+          <IndiaMapLeaderboard />
         </div>
 
         <section aria-labelledby="leaderboard-title" className="neo-panel mb-7 bg-white p-4 sm:p-6">

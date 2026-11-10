@@ -29,6 +29,7 @@ interface DatabaseReading {
 interface DatabaseSpace {
   id: string;
   name: string;
+  owner_id?: string | null;
   display_name?: string | null;
   type?: Space["type"];
   baseline_kwh_per_day?: number | null;
@@ -58,7 +59,7 @@ export class SupabaseRepository implements ReadingRepository {
   async listSpaces(): Promise<readonly Space[]> {
     const { data, error } = await this.client
       .from("spaces")
-      .select("id, name, display_name, type, baseline_kwh_per_day, people_count, created_at")
+      .select("id, name, owner_id, display_name, type, baseline_kwh_per_day, people_count, created_at")
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -69,6 +70,7 @@ export class SupabaseRepository implements ReadingRepository {
     return (data as DatabaseSpace[] || []).map((row) => ({
       id: row.id,
       name: row.name,
+      ownerId: row.owner_id ?? undefined,
       displayName: row.display_name ?? undefined,
       type: row.type,
       baselineKwhPerDay: row.baseline_kwh_per_day === null || row.baseline_kwh_per_day === undefined
@@ -88,12 +90,13 @@ export class SupabaseRepository implements ReadingRepository {
       .insert({
         id,
         name,
+        owner_id: details.ownerId,
         display_name: details.displayName,
         type: details.type,
         baseline_kwh_per_day: details.baselineKwhPerDay,
         people_count: details.peopleCount,
       })
-      .select("id, name, display_name, type, baseline_kwh_per_day, people_count, created_at")
+      .select("id, name, owner_id, display_name, type, baseline_kwh_per_day, people_count, created_at")
       .single();
 
     if (error) {
@@ -105,6 +108,7 @@ export class SupabaseRepository implements ReadingRepository {
     return {
       id: row.id,
       name: row.name,
+      ownerId: row.owner_id ?? undefined,
       displayName: row.display_name ?? undefined,
       type: row.type,
       baselineKwhPerDay: row.baseline_kwh_per_day === null || row.baseline_kwh_per_day === undefined

@@ -15,6 +15,12 @@ import { RewardsSummary } from "@/components/RewardsSummary";
 import { ManualEntryModal } from "@/components/ManualEntryModal";
 import { EmptyState } from "@/components/EmptyState";
 import { DashboardSkeleton } from "@/components/Skeletons";
+import { NationalGridClockWidget } from "@/components/NationalGridClockWidget";
+import { ApplianceScheduler } from "@/components/ApplianceScheduler";
+import { UniversalBillScannerModal } from "@/components/UniversalBillScannerModal";
+import { NationalGreenPassport } from "@/components/NationalGreenPassport";
+import { SmartMeterTelemetryView } from "@/components/SmartMeterTelemetryView";
+import { HomeEnergyAuditModal } from "@/components/HomeEnergyAuditModal";
 import { buildDashboardViewModel } from "@/services/dashboardService";
 import type { Reading, Assumptions } from "@/domain/types";
 import { DEFAULT_ASSUMPTIONS } from "@/lib/config";
@@ -27,6 +33,9 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAssumptionsOpen, setIsAssumptionsOpen] = useState(false);
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
+  const [isBillScannerOpen, setIsBillScannerOpen] = useState(false);
+  const [isPassportOpen, setIsPassportOpen] = useState(false);
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [showUploadSection, setShowUploadSection] = useState(false);
 
   const fetchReadings = useCallback(async (targetSpace: string) => {
@@ -132,6 +141,30 @@ export default function DashboardPage() {
 
           <div className="flex flex-wrap items-center gap-2.5">
             <button
+              onClick={() => setIsBillScannerOpen(true)}
+              className="neo-btn bg-emerald-400 text-zinc-950 font-black text-xs px-3.5 py-2 flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+            >
+              <span>⚡</span>
+              <span>Scan Indian Bill</span>
+            </button>
+
+            <button
+              onClick={() => setIsPassportOpen(true)}
+              className="neo-btn bg-[#b7c6c2] text-black font-bold text-xs px-3.5 py-2 flex items-center gap-1.5"
+            >
+              <span>🌱</span>
+              <span>Green Passport</span>
+            </button>
+
+            <button
+              onClick={() => setIsAuditOpen(true)}
+              className="neo-btn bg-[#f5f4e8] text-black font-bold text-xs px-3.5 py-2 flex items-center gap-1.5"
+            >
+              <span>🔍</span>
+              <span>Home Energy Audit</span>
+            </button>
+
+            <button
               onClick={() => setIsManualEntryOpen(true)}
               className="neo-btn bg-white text-black text-xs px-3.5 py-2 flex items-center gap-1.5"
             >
@@ -216,9 +249,24 @@ export default function DashboardPage() {
           />
         )}
 
+        {!isLoading && (
+          <div className="mb-8">
+            <ApplianceScheduler />
+          </div>
+        )}
+
         {/* Active Dashboard Views */}
         {!isLoading && readings.length > 0 && (
           <div className="space-y-8">
+            {/* National Grid Stress & Green Hours Clock */}
+            <NationalGridClockWidget />
+
+            {/* Live 24-Hour Smart Meter Telemetry Load Curve */}
+            <SmartMeterTelemetryView
+              dailyKwh={viewModel.stats.averageKwh || 11.5}
+              tariffPerKwh={assumptions.tariffPerKwh}
+            />
+
             {/* Stat Cards */}
             <StatCards
               stats={viewModel.stats}
@@ -279,6 +327,35 @@ export default function DashboardPage() {
         isOpen={isManualEntryOpen}
         onClose={() => setIsManualEntryOpen(false)}
         onReadingAdded={() => fetchReadings(spaceId)}
+      />
+
+      {/* Pan-India AI Electricity Bill Scanner Modal */}
+      <UniversalBillScannerModal
+        isOpen={isBillScannerOpen}
+        onClose={() => setIsBillScannerOpen(false)}
+        spaceId={spaceId}
+        onImportComplete={() => fetchReadings(spaceId)}
+      />
+
+      {/* Citizen Green Passport Modal */}
+      <NationalGreenPassport
+        isOpen={isPassportOpen}
+        onClose={() => setIsPassportOpen(false)}
+        profile={{
+          name: "National Energy Champion",
+          stateCode: "IN",
+          totalPoints: 280,
+          totalKwhSaved: 210,
+          totalCo2AvoidedKg: 150.3,
+          completedQuestsCount: 8,
+        }}
+      />
+
+      {/* Virtual Home Energy Audit Modal */}
+      <HomeEnergyAuditModal
+        isOpen={isAuditOpen}
+        onClose={() => setIsAuditOpen(false)}
+        tariffPerKwh={assumptions.tariffPerKwh}
       />
     </div>
   );

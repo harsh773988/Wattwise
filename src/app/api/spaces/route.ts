@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRepository } from "@/infra";
 import { withApi } from "@/lib/apiWrapper";
+import { getApiAuthContext, unauthorizedResponse } from "@/lib/supabase/apiAuth";
 
 const createSpaceSchema = z.object({
   name: z.string().trim().min(1, "Space name is required").max(60, "Space name too long"),
@@ -18,8 +19,13 @@ const createSpaceSchema = z.object({
 type CreateSpaceBody = z.infer<typeof createSpaceSchema>;
 
 export const GET = withApi(async () => {
+  const auth = await getApiAuthContext();
+  if (auth.enabled && !auth.user) return unauthorizedResponse();
   const repo = getRepository();
-  const spaces = await repo.listSpaces();
+  const allSpaces = await repo.listSpaces();
+  const spaces = auth.enabled && auth.user
+    ? allSpaces.filter((space) => space.ownerId === auth.user?.id)
+    : allSpaces;
 
   return NextResponse.json({
     data: spaces,
@@ -28,8 +34,11 @@ export const GET = withApi(async () => {
 
 export const POST = withApi<CreateSpaceBody>(
   async (_req, { body }) => {
+    const auth = await getApiAuthContext();
+    if (auth.enabled && !auth.user) return unauthorizedResponse();
     const repo = getRepository();
     const created = await repo.createSpace(body.name, {
+      ownerId: auth.user?.id,
       displayName: body.displayName,
       type: body.type,
       baselineKwhPerDay: body.baselineKwhPerDay,

@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { MemoryRepository } from "@/infra/memoryRepository";
 import { setRepository } from "@/infra";
 import { challengeCatalog } from "@/domain/challenges";
+import { NATIONAL_QUESTS_CATALOG } from "@/domain/nationalLifeQuests";
 import { POST } from "./route";
 import { POST as legacyPost } from "../route";
 
@@ -65,6 +66,28 @@ describe("POST /api/challenges/complete", () => {
     }));
     expect(capped.status).toBe(400);
     expect((await capped.json()).error.message).toMatch(/cap reached/i);
+  });
+
+  it("records Mission LiFE quests in the persistent challenge ledger", async () => {
+    const repository = new MemoryRepository();
+    setRepository(repository);
+    const date = new Date().toISOString().slice(0, 10);
+    const quest = NATIONAL_QUESTS_CATALOG.find((item) => item.id === "quest_ac_25c")!;
+
+    const response = await POST(request({
+      profileId: "test-profile",
+      challengeId: quest.id,
+      date,
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body.data.challenge.id).toBe(quest.id);
+    expect(body.data.completion.points_awarded).toBe(10);
+    expect(await repository.getChallengeCompletion("test-profile", quest.id, date)).toEqual(
+      body.data.completion,
+    );
+    expect(await repository.listPointsLedger("test-profile")).toHaveLength(1);
   });
 
   it("does not allow the legacy challenge route to accept client-supplied points", async () => {

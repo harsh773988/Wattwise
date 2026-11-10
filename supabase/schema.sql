@@ -11,13 +11,9 @@
 CREATE TABLE IF NOT EXISTS spaces (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
-
--- Insert default demo space
-INSERT INTO spaces (id, name)
-VALUES ('default', 'My Room')
-ON CONFLICT (id) DO NOTHING;
 
 -- 2. Readings table: daily electricity consumption measurements
 CREATE TABLE IF NOT EXISTS readings (
@@ -35,12 +31,76 @@ CREATE INDEX IF NOT EXISTS idx_readings_space_date ON readings (space_id, date A
 ALTER TABLE spaces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE readings ENABLE ROW LEVEL SECURITY;
 
--- Demo policies allowing anonymous read/upsert access
-CREATE POLICY "Allow read access to spaces" ON spaces
-  FOR SELECT USING (true);
+-- Authenticated users can access only their own spaces and readings.
+CREATE POLICY "Users can read their own spaces" ON spaces
+  FOR SELECT TO authenticated USING (owner_id = (SELECT auth.uid()));
 
-CREATE POLICY "Allow read access to readings" ON readings
-  FOR SELECT USING (true);
+CREATE POLICY "Users can create their own spaces" ON spaces
+  FOR INSERT TO authenticated WITH CHECK (owner_id = (SELECT auth.uid()));
 
-CREATE POLICY "Allow upsert access to readings" ON readings
-  FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Users can update their own spaces" ON spaces
+  FOR UPDATE TO authenticated
+  USING (owner_id = (SELECT auth.uid()))
+  WITH CHECK (owner_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users can delete their own spaces" ON spaces
+  FOR DELETE TO authenticated USING (owner_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users can read readings in their own spaces" ON readings
+  FOR SELECT TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM spaces
+    WHERE spaces.id = readings.space_id
+      AND spaces.owner_id = (SELECT auth.uid())
+  ));
+
+CREATE POLICY "Users can add readings to their own spaces" ON readings
+  FOR INSERT TO authenticated
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM spaces
+    WHERE spaces.id = readings.space_id
+      AND spaces.owner_id = (SELECT auth.uid())
+  ));
+
+CREATE POLICY "Users can update readings in their own spaces" ON readings
+  FOR UPDATE TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM spaces
+    WHERE spaces.id = readings.space_id
+      AND spaces.owner_id = (SELECT auth.uid())
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM spaces
+    WHERE spaces.id = readings.space_id
+      AND spaces.owner_id = (SELECT auth.uid())
+  ));
+
+CREATE POLICY "Users can delete readings in their own spaces" ON readings
+  FOR DELETE TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM spaces
+    WHERE spaces.id = readings.space_id
+      AND spaces.owner_id = (SELECT auth.uid())
+  ));
+
+CREATE OR REPLACE FUNCTION public.create_wattwise_home_for_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.spaces (id, name, owner_id)
+  VALUES (
+    NEW.id::TEXT,
+    COALESCE(NULLIF(NEW.raw_user_meta_data ->> 'display_name', ''), 'My Home'),
+    NEW.id
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER create_wattwise_home_after_signup
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.create_wattwise_home_for_user();

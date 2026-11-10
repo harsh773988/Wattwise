@@ -1,4 +1,4 @@
-import { challengeCatalog } from "@/domain/challenges";
+import { getChallengeById } from "@/domain/challenges";
 import type { ChallengeCompletion } from "@/domain/types";
 import type { ReadingRepository } from "@/infra/repository";
 import { DEFAULT_GAMIFICATION_CONFIG } from "@/lib/config";
@@ -21,7 +21,7 @@ export async function awardChallengeCompletion(
   challengeId: string,
   date: string,
 ): Promise<ChallengeCompletion> {
-  const challenge = challengeCatalog.find((item) => item.id === challengeId);
+  const challenge = getChallengeById(challengeId);
   if (!challenge) {
     throw new ChallengeAwardError("unknown_challenge", `Unknown challenge id: ${challengeId}`);
   }

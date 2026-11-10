@@ -43,8 +43,7 @@ function loadEnv(): EnvConfig {
   const result = envSchema.safeParse({
     SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY:
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
     NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
@@ -76,8 +75,7 @@ export function getEnv(): EnvConfig {
 export function isSupabaseConfigured(): boolean {
   const env = getEnv();
   const url = env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = env.SUPABASE_SERVICE_ROLE_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return Boolean(url && key);
+  return Boolean(url && env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
 /** Chart downsampling threshold — switch to weekly aggregation above this. */

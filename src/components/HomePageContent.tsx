@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { UniversalBillScannerModal } from "@/components/UniversalBillScannerModal";
 
 const missionFeatures = [
   {
@@ -46,6 +47,7 @@ const missionFeatures = [
 export function HomePageContent() {
   const router = useRouter();
   const [isLoadingSample, setIsLoadingSample] = useState(false);
+  const [isBillScannerOpen, setIsBillScannerOpen] = useState(false);
 
   const handleLoadSampleAndRedirect = async () => {
     setIsLoadingSample(true);
@@ -97,6 +99,14 @@ export function HomePageContent() {
           </p>
 
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => setIsBillScannerOpen(true)}
+              className="neo-btn flex min-h-12 w-full items-center justify-center gap-2 bg-emerald-400 font-black px-5 py-3 text-sm text-black shadow-[4px_4px_0px_0px_#000] sm:w-auto sm:text-base"
+            >
+              <span aria-hidden="true">📷</span>
+              <span>Scan Indian Bill (AI OCR)</span>
+            </button>
             <button
               type="button"
               onClick={handleLoadSampleAndRedirect}
@@ -178,6 +188,16 @@ export function HomePageContent() {
           </article>
         </section>
       </main>
+
+      <UniversalBillScannerModal
+        isOpen={isBillScannerOpen}
+        onClose={() => setIsBillScannerOpen(false)}
+        spaceId="default"
+        onImportComplete={() => {
+          router.push("/dashboard");
+        }}
+      />
+
       <Footer />
     </div>
   );

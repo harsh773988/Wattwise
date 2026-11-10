@@ -3,6 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { SUPPORTED_LANGUAGES, SupportedLanguage, getTranslations } from "@/domain/i18n";
+import { AuthControls } from "@/components/AuthControls";
 
 interface NavbarProps {
   currentSpaceId?: string;
@@ -11,12 +14,15 @@ interface NavbarProps {
 
 export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProps) {
   const pathname = usePathname();
+  const [currentLang, setCurrentLang] = useState<SupportedLanguage>("en");
+  const t = getTranslations(currentLang);
+
   const navigation = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/challenges", label: "Challenges" },
-    { href: "/community", label: "Community" },
-    { href: "/solar", label: "Solar" },
-    { href: "/admin", label: "Admin", secondary: true },
+    { href: "/dashboard", label: t.dashboard },
+    { href: "/challenges", label: t.challenges },
+    { href: "/community", label: t.community },
+    { href: "/solar", label: t.solar },
+    { href: "/admin", label: t.admin, secondary: true },
   ] as const;
 
   return (
@@ -66,6 +72,25 @@ export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProp
           })}
         </nav>
 
+        {/* Pan-India Bhasha Language Selector */}
+        <div className="order-4 flex items-center border-2 border-black bg-white px-2 py-1 shadow-[2px_2px_0px_0px_#000] md:order-3">
+          <span className="text-[11px] font-black uppercase text-black/70 mr-1.5" aria-hidden="true">
+            🌐
+          </span>
+          <select
+            value={currentLang}
+            onChange={(e) => setCurrentLang(e.target.value as SupportedLanguage)}
+            aria-label="Select Language"
+            className="bg-transparent text-xs font-bold text-black focus:outline-none cursor-pointer"
+          >
+            {SUPPORTED_LANGUAGES.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.nativeName} ({l.name})
+              </option>
+            ))}
+          </select>
+        </div>
+
         {onSpaceChange && (
           <div className="order-4 flex min-h-11 w-full min-w-0 max-w-full items-center gap-2 border-2 border-black bg-white px-2 py-1 shadow-[2px_2px_0px_0px_#000] md:order-3 md:ml-auto md:w-auto md:flex-none sm:px-2.5">
             <span className="shrink-0 whitespace-nowrap text-[11px] font-black uppercase tracking-wider text-black/70 sm:text-xs">
@@ -81,6 +106,7 @@ export function Navbar({ currentSpaceId = "default", onSpaceChange }: NavbarProp
             />
           </div>
         )}
+        <AuthControls />
       </div>
     </header>
   );

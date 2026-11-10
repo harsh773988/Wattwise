@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import { IndiaMapLeaderboard } from "@/components/IndiaMapLeaderboard";
 import type { AdminSummary } from "@/domain/admin";
 
 const AdminTrendChart = dynamic(() => import("@/components/AdminTrendChart"), {
@@ -194,6 +195,10 @@ export function AdminDashboard() {
               <p className="mb-3 text-xs font-medium text-black/70">Each date compares available community readings against the configured daily baselines. Missing readings are not counted.</p>
               <AdminTrendChart data={summary.trend} />
             </section>
+
+            <div className="mt-7">
+              <IndiaMapLeaderboard />
+            </div>
 
             <section className="neo-panel mt-7 bg-white p-4 sm:p-6" aria-labelledby="communities-title">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

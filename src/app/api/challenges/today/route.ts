@@ -7,6 +7,7 @@ import { z } from "zod";
 import { calculateChallengeStreak, pickDailyChallenges } from "@/domain/challenges";
 import { getRepository } from "@/infra";
 import { withApi } from "@/lib/apiWrapper";
+import { getApiAuthContext, resolveProfileId, unauthorizedResponse } from "@/lib/supabase/apiAuth";
 
 const challengeQuerySchema = z.object({
   profileId: z.string().trim().min(1).default("demo-profile"),
@@ -23,7 +24,11 @@ export const GET = withApi(async (req, { query }) => {
     return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: parsed.error.message } }, { status: 400 });
   }
 
-  const { profileId, appliances, baseline, date } = parsed.data;
+  const auth = await getApiAuthContext();
+  if (auth.enabled && !auth.user) return unauthorizedResponse();
+  const profileId = resolveProfileId(auth, parsed.data.profileId);
+  if (!profileId) return unauthorizedResponse();
+  const { appliances, baseline, date } = parsed.data;
   const profileAppliances = appliances
     ? appliances.split(",").map((value) => value.trim()).filter(Boolean)
     : ["geyser", "washing machine", "ac"];

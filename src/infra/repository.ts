@@ -14,6 +14,7 @@ import type {
 export interface Space {
   readonly id: string;
   readonly name: string;
+  readonly ownerId?: string;
   readonly displayName?: string;
   readonly type?: SpaceType;
   readonly baselineKwhPerDay?: number;
@@ -23,6 +24,7 @@ export interface Space {
 
 export interface CreateSpaceDetails {
   readonly id?: string;
+  readonly ownerId?: string;
   readonly displayName?: string;
   readonly type?: SpaceType;
   readonly baselineKwhPerDay?: number;

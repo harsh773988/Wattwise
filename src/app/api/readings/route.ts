@@ -7,6 +7,11 @@ import { z } from "zod";
 import { getRepository } from "@/infra";
 import { withApi } from "@/lib/apiWrapper";
 import type { Reading } from "@/domain/types";
+import {
+  getApiAuthContext,
+  resolveOwnedSpaceId,
+  unauthorizedResponse,
+} from "@/lib/supabase/apiAuth";
 
 const getReadingsQuerySchema = z.object({
   spaceId: z.string().min(1).default("default"),
@@ -42,7 +47,16 @@ type PostReadingsBody = z.infer<typeof postReadingsBodySchema>;
 
 export const GET = withApi<unknown, GetReadingsQuery>(
   async (_req, { query }) => {
-    const { spaceId, from, to, limit, cursor, offset } = query;
+    const auth = await getApiAuthContext();
+    if (auth.enabled && !auth.user) return unauthorizedResponse();
+    const spaceId = await resolveOwnedSpaceId(auth, query.spaceId);
+    if (!spaceId) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "You do not have access to this space." } },
+        { status: 403 },
+      );
+    }
+    const { from, to, limit, cursor, offset } = query;
     const repo = getRepository();
 
     const page = await repo.getReadings(spaceId, {
@@ -72,7 +86,16 @@ export const GET = withApi<unknown, GetReadingsQuery>(
 
 export const POST = withApi<PostReadingsBody>(
   async (_req, { body }) => {
-    const { spaceId, readings } = body;
+    const auth = await getApiAuthContext();
+    if (auth.enabled && !auth.user) return unauthorizedResponse();
+    const spaceId = await resolveOwnedSpaceId(auth, body.spaceId);
+    if (!spaceId) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "You do not have access to this space." } },
+        { status: 403 },
+      );
+    }
+    const { readings } = body;
     const repo = getRepository();
 
     const domainReadings: Reading[] = readings.map((r) => ({
@@ -101,7 +124,16 @@ export const POST = withApi<PostReadingsBody>(
 
 export const DELETE = withApi(async (req) => {
   const url = new URL(req.url);
-  const spaceId = url.searchParams.get("spaceId") || "default";
+  const requestedSpaceId = url.searchParams.get("spaceId") || "default";
+  const auth = await getApiAuthContext();
+  if (auth.enabled && !auth.user) return unauthorizedResponse();
+  const spaceId = await resolveOwnedSpaceId(auth, requestedSpaceId);
+  if (!spaceId) {
+    return NextResponse.json(
+      { error: { code: "FORBIDDEN", message: "You do not have access to this space." } },
+      { status: 403 },
+    );
+  }
 
   const repo = getRepository();
   await repo.deleteReadings(spaceId);

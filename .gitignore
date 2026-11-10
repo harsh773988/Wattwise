@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/public/wattwise-ocr/
 /out/
 
 # production

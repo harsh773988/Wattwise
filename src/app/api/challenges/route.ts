@@ -4,12 +4,13 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { challengeCatalog, pickDailyChallenges } from "@/domain/challenges";
+import { getChallengeById, pickDailyChallenges } from "@/domain/challenges";
 import { getRepository } from "@/infra";
 import { ApiErrors } from "@/lib/apiError";
 import { withApi } from "@/lib/apiWrapper";
 import { awardChallengeCompletion, ChallengeAwardError } from "@/services/challengeCompletionService";
 import type { ChallengeCompletion } from "@/domain/types";
+import { getApiAuthContext, resolveProfileId, unauthorizedResponse } from "@/lib/supabase/apiAuth";
 
 const challengesQuerySchema = z.object({
   profileId: z.string().trim().min(1).default("demo-profile"),
@@ -26,7 +27,11 @@ export const GET = withApi(async (req, { query }) => {
     return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: parsed.error.message } }, { status: 400 });
   }
 
-  const { profileId, appliances, baseline, date } = parsed.data;
+  const auth = await getApiAuthContext();
+  if (auth.enabled && !auth.user) return unauthorizedResponse();
+  const profileId = resolveProfileId(auth, parsed.data.profileId);
+  if (!profileId) return unauthorizedResponse();
+  const { appliances, baseline, date } = parsed.data;
   const profileAppliances = appliances
     ? appliances.split(",").map((value) => value.trim()).filter(Boolean)
     : ["geyser", "washing machine", "ac"];
@@ -75,14 +80,21 @@ const completeChallengeSchema = z.object({
 });
 
 export const POST = withApi<z.infer<typeof completeChallengeSchema>>(async (_req, { body }) => {
+  const auth = await getApiAuthContext();
+  if (auth.enabled && !auth.user) return unauthorizedResponse();
   const repo = getRepository();
   const parsed = completeChallengeSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: parsed.error.message } }, { status: 400 });
   }
 
-  const { profileId, challengeId, date } = parsed.data;
-  const challenge = challengeCatalog.find((item) => item.id === challengeId);
+  const profileId = resolveProfileId(auth, parsed.data.profileId);
+  if (!profileId) return unauthorizedResponse();
+  const { challengeId, date } = parsed.data;
+  const challenge = getChallengeById(challengeId);
+  if (!challenge) {
+    return ApiErrors.badRequest(`Unknown challenge id: ${challengeId}`);
+  }
   let completion: ChallengeCompletion;
   try {
     completion = await awardChallengeCompletion(repo, profileId, challengeId, date);
